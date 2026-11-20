@@ -1,6 +1,5 @@
 import AppIntents
 import Foundation
-import UniformTypeIdentifiers
 
 struct FactCheckScreenshotIntent: AppIntent {
     static var title: LocalizedStringResource = "事實查核截圖"
@@ -9,7 +8,7 @@ struct FactCheckScreenshotIntent: AppIntent {
 
     @Parameter(
         title: "截圖圖片",
-        supportedTypeIdentifiers: [UTType.image.identifier]
+        supportedTypeIdentifiers: ["public.image"]
     )
     var image: IntentFile
 
