@@ -1,6 +1,8 @@
-# Gradle / Android build artifacts
+# Gradle / Android / KMP build artifacts
 .gradle/
 build/
+shared/build/
+androidApp/build/
 app/build/
 captures/
 *.apk
@@ -8,6 +10,13 @@ captures/
 *.aab
 *.dex
 *.class
+
+# iOS generated Xcode project & build artifacts
+iosApp/*.xcodeproj/
+iosApp/build/
+iosApp/DerivedData/
+*.xcarchive
+*.ipa
 
 # Local configuration (SDK paths, signing keys)
 local.properties

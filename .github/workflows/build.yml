@@ -1,0 +1,74 @@
+name: TrueFind CI (Android & iOS)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  android:
+    name: Shared Tests & Android Debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run shared & Android unit tests and build Debug APK
+        run: ./gradlew :shared:jvmTest :androidApp:testDebugUnitTest :androidApp:assembleDebug
+
+      - name: Audit merged Android manifest (Google Play compliance)
+        run: |
+          MANIFEST="androidApp/build/intermediates/merged_manifest/debug/processDebugMainManifest/AndroidManifest.xml"
+          if grep -E "INTERNET|ACCESSIBILITY|QUERY_ALL_PACKAGES|READ_MEDIA_IMAGES|WRITE_EXTERNAL_STORAGE" "$MANIFEST"; then
+            echo "ERROR: Forbidden permission found in merged manifest!"
+            exit 1
+          fi
+          echo "PASS: Merged manifest contains zero forbidden permissions."
+
+      - name: Upload Android Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrueFind-Android-Debug-APK
+          path: androidApp/build/outputs/apk/debug/androidApp-debug.apk
+
+  ios:
+    name: Shared XCFramework & iOS Build (macOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run shared iOS simulator tests & build TrueFindShared.xcframework
+        run: ./gradlew :shared:iosSimulatorArm64Test :shared:assembleTrueFindSharedReleaseXCFramework
+
+      - name: Install XcodeGen and generate TrueFind.xcodeproj
+        run: |
+          brew install xcodegen
+          cd iosApp
+          xcodegen generate
+
+      - name: Build iOS App & Share Extension (Simulator, unsigned CI verification)
+        run: |
+          cd iosApp
+          xcodebuild \
+            -project TrueFind.xcodeproj \
+            -scheme TrueFind \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
