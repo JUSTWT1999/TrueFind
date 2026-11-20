@@ -114,6 +114,24 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".assist.TrueFindAssistService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/voice_interaction_service" />
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".assist.TrueFindAssistSessionService"
+            android:exported="false"
+            android:permission="android.permission.BIND_VOICE_INTERACTION" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

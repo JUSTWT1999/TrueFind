@@ -256,8 +256,9 @@ private fun CapturePreviewCard(
                 ) {
                     val title = when (payload.source) {
                         CaptureSource.SCROLL_STITCH -> "已拼接長截圖（${payload.frameCount} 頁）"
+                        CaptureSource.DIGITAL_ASSISTANT -> "已零彈窗快照目前畫面"
                         CaptureSource.SHARE_IMAGE -> "已接收分享圖片"
-                        else -> "已擷取目標畫面"
+                        else -> "已擷取目前畫面"
                     }
                     Text(
                         text = title,

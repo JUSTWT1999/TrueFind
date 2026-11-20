@@ -93,6 +93,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TrueFindTheme {
+                var isDefaultAssistant by remember { mutableStateOf(isTrueFindDefaultAssistant()) }
                 var hasOverlayPermission by remember { mutableStateOf(Settings.canDrawOverlays(this)) }
                 var hasNotifPermission by remember { mutableStateOf(hasNotificationPermission()) }
                 var bubbleActive by remember {
@@ -107,6 +108,7 @@ class MainActivity : ComponentActivity() {
                 DisposableEffect(lifecycleOwner) {
                     val observer = LifecycleEventObserver { _, event ->
                         if (event == Lifecycle.Event.ON_RESUME) {
+                            isDefaultAssistant = isTrueFindDefaultAssistant()
                             hasOverlayPermission = Settings.canDrawOverlays(this@MainActivity)
                             hasNotifPermission = hasNotificationPermission()
                             bubbleActive = FloatingBubbleService.isRunning
@@ -118,11 +120,13 @@ class MainActivity : ComponentActivity() {
                 }
 
                 MainSettingsScreen(
+                    isDefaultAssistant = isDefaultAssistant,
                     hasOverlayPermission = hasOverlayPermission,
                     hasNotifPermission = hasNotifPermission,
                     bubbleActive = bubbleActive,
                     targets = targets,
                     templates = templates,
+                    onOpenAssistantSettings = { openDefaultAssistantSettings() },
                     onToggleBubble = { enable ->
                         if (enable) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission()) {
@@ -140,16 +144,14 @@ class MainActivity : ComponentActivity() {
                     onRequestOverlayPermission = { openOverlayPermissionSettings() },
                     onRequestAddTile = { requestQuickSettingsTile() },
                     onStartSingleCapture = {
-                        moveTaskToBack(true)
-                        startActivity(ScreenCaptureActivity.createIntent(this, CaptureMode.SINGLE))
+                        launchCaptureBehindMain(CaptureMode.SINGLE)
                     },
                     onStartScrollCapture = {
                         if (!Settings.canDrawOverlays(this)) {
                             Toast.makeText(this, "捲動拼圖需要「顯示在其他應用程式上層」權限", Toast.LENGTH_SHORT).show()
                             openOverlayPermissionSettings()
                         } else {
-                            moveTaskToBack(true)
-                            startActivity(ScreenCaptureActivity.createIntent(this, CaptureMode.SCROLL_STITCH))
+                            launchCaptureBehindMain(CaptureMode.SCROLL_STITCH)
                         }
                     },
                     onAddTemplate = {
@@ -195,6 +197,27 @@ class MainActivity : ComponentActivity() {
         return true
     }
 
+    private fun launchCaptureBehindMain(mode: CaptureMode) {
+        moveTaskToBack(true)
+        window.decorView.postDelayed({
+            startActivity(ScreenCaptureActivity.createIntent(this, mode))
+        }, 220L)
+    }
+
+    private fun isTrueFindDefaultAssistant(): Boolean {
+        return runCatching {
+            val current = Settings.Secure.getString(contentResolver, "assistant").orEmpty()
+            current.contains(packageName)
+        }.getOrDefault(false)
+    }
+
+    private fun openDefaultAssistantSettings() {
+        val intent = Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)
+        runCatching { startActivity(intent) }.onFailure {
+            runCatching { startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)) }
+        }
+    }
+
     private fun openOverlayPermissionSettings() {
         val intent = Intent(
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -238,11 +261,13 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun MainSettingsScreen(
+    isDefaultAssistant: Boolean,
     hasOverlayPermission: Boolean,
     hasNotifPermission: Boolean,
     bubbleActive: Boolean,
     targets: List<AiTargetApp>,
     templates: List<PromptTemplate>,
+    onOpenAssistantSettings: () -> Unit,
     onToggleBubble: (Boolean) -> Unit,
     onRequestOverlayPermission: () -> Unit,
     onRequestAddTile: () -> Unit,
@@ -277,6 +302,58 @@ private fun MainSettingsScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Card 0: Zero-Dialog Digital Assistant Mode (True 2-Step!)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "⚡ 零彈窗 2 步直達（數位助理模式）",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = if (isDefaultAssistant) {
+                                Color(0xFF16A34A).copy(alpha = 0.18f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            }
+                        ) {
+                            Text(
+                                text = if (isDefaultAssistant) "已啟用 ✓" else "未設定",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isDefaultAssistant) Color(0xFF15803D) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = "設為系統預設數位助理後，看任何貼文只需「長按主畫面鍵／電源鍵（或底角滑入）」，完全 0 系統確認窗直接快照當下畫面 → 點 AI 即送出！\n（請在系統頁確認開啟「使用螢幕截圖」）",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = onOpenAssistantSettings,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (isDefaultAssistant) "檢視數位助理設定" else "前往啟用零彈窗模式")
+                    }
+                }
+            }
+
             // Card 1: Floating Bubble & Quick Capture
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -327,13 +404,13 @@ private fun MainSettingsScreen(
                             onClick = onStartSingleCapture,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("選 App 單張查核")
+                            Text("立即單張截圖")
                         }
                         OutlinedButton(
                             onClick = onStartScrollCapture,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("選 App 捲動接圖")
+                            Text("立即捲動接圖")
                         }
                     }
 

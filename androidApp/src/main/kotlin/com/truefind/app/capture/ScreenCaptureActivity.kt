@@ -45,9 +45,10 @@ class ScreenCaptureActivity : ComponentActivity() {
         val projectionManager =
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         val captureIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            // Defaults Android 14/15 system dialog to single-app capture while remaining Play compliant.
+            // Directly captures the current display without an extra app-picker screen.
+            // Combined with taskAffinity="", TrueFind stays out of the foreground so only the user's post is captured.
             projectionManager.createScreenCaptureIntent(
-                MediaProjectionConfig.createConfigForUserChoice()
+                MediaProjectionConfig.createConfigForDefaultDisplay()
             )
         } else {
             projectionManager.createScreenCaptureIntent()
