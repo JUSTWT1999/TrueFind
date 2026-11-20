@@ -63,7 +63,7 @@ enum IosImageStitcher {
                 height: Int32(analysisH),
                 topIgnoreRows: topIgnoreSmall,
                 bottomIgnoreRows: bottomIgnoreSmall,
-                maxMadThreshold: OverlapFinder.shared.DEFAULT_MAX_MAD
+                maxMadThreshold: 0.08
             )
 
             if match.isDuplicateFrame { continue }

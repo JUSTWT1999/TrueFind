@@ -26,18 +26,6 @@ struct FactCheckScreenshotIntent: AppIntent {
     }
 }
 
-struct TrueFindAppShortcuts: AppShortcutsProvider {
-    static var appShortcuts: [AppShortcut] {
-        AppShortcut(
-            intent: FactCheckScreenshotIntent(),
-            phrases: [
-                "用 \(.applicationName) 事實查核",
-                "使用 \(.applicationName) 查核畫面"
-            ]
-        )
-    }
-}
-
 extension Notification.Name {
     static let trueFindPendingShortcutCapture = Notification.Name("trueFindPendingShortcutCapture")
 }
