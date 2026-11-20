@@ -2,6 +2,7 @@ package com.truefind.app.assist
 
 import android.app.assist.AssistStructure
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
@@ -9,6 +10,8 @@ import android.os.Looper
 import android.service.voice.VoiceInteractionService
 import android.service.voice.VoiceInteractionSession
 import android.service.voice.VoiceInteractionSessionService
+import android.speech.RecognitionService
+import android.speech.SpeechRecognizer
 import android.widget.Toast
 import com.truefind.app.R
 import com.truefind.app.TrueFindApp
@@ -29,6 +32,21 @@ class TrueFindAssistService : VoiceInteractionService()
 class TrueFindAssistSessionService : VoiceInteractionSessionService() {
     override fun onNewSession(args: Bundle?): VoiceInteractionSession =
         TrueFindAssistSession(this)
+}
+
+/**
+ * Minimal RecognitionService required by Android's VoiceInteractionServiceInfo parser
+ * so TrueFind is eligible to appear in Settings -> Default Digital Assistant App.
+ * Does not record audio or require RECORD_AUDIO permission.
+ */
+class TrueFindRecognitionService : RecognitionService() {
+    override fun onStartListening(recognizerIntent: Intent?, listener: Callback?) {
+        runCatching { listener?.error(SpeechRecognizer.ERROR_CLIENT) }
+    }
+
+    override fun onCancel(listener: Callback?) = Unit
+
+    override fun onStopListening(listener: Callback?) = Unit
 }
 
 /**

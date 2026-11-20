@@ -2,6 +2,7 @@ package com.truefind.app.settings
 
 import android.Manifest
 import android.app.StatusBarManager
+import android.app.role.RoleManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -83,6 +84,11 @@ class MainActivity : ComponentActivity() {
                 pendingEnableBubbleAfterNotif = false
                 tryEnableBubble()
             }
+        }
+
+    private val assistantRoleLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            // Status refreshes automatically in ON_RESUME
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,6 +211,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun isTrueFindDefaultAssistant(): Boolean {
+        val rm = getSystemService(RoleManager::class.java)
+        if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_ASSISTANT)) {
+            return rm.isRoleHeld(RoleManager.ROLE_ASSISTANT)
+        }
         return runCatching {
             val current = Settings.Secure.getString(contentResolver, "assistant").orEmpty()
             current.contains(packageName)
@@ -212,6 +222,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openDefaultAssistantSettings() {
+        val rm = getSystemService(RoleManager::class.java)
+        if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_ASSISTANT) && !rm.isRoleHeld(RoleManager.ROLE_ASSISTANT)) {
+            val roleIntent = rm.createRequestRoleIntent(RoleManager.ROLE_ASSISTANT)
+            runCatching {
+                assistantRoleLauncher.launch(roleIntent)
+                return
+            }
+        }
         val intent = Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)
         runCatching { startActivity(intent) }.onFailure {
             runCatching { startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)) }
