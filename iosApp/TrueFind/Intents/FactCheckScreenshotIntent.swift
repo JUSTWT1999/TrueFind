@@ -9,7 +9,7 @@ struct FactCheckScreenshotIntent: AppIntent {
 
     @Parameter(
         title: "截圖圖片",
-        supportedTypeIdentifiers: [UTType.image.identifier]
+        supportedContentTypes: [.image]
     )
     var image: IntentFile
 
@@ -33,9 +33,7 @@ struct TrueFindAppShortcuts: AppShortcutsProvider {
             phrases: [
                 "用 \(.applicationName) 事實查核",
                 "使用 \(.applicationName) 查核畫面"
-            ],
-            shortTitle: "TrueFind 查核截圖",
-            systemImageName: "checkmark.shield.fill"
+            ]
         )
     }
 }

@@ -22,7 +22,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Run shared & Android unit tests and build Debug APK
-        run: ./gradlew :shared:jvmTest :androidApp:testDebugUnitTest :androidApp:assembleDebug
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :shared:jvmTest :androidApp:testDebugUnitTest :androidApp:assembleDebug
 
       - name: Audit merged Android manifest (Google Play compliance)
         run: |
@@ -53,7 +55,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Run shared iOS simulator tests & build TrueFindShared.xcframework
-        run: ./gradlew :shared:iosSimulatorArm64Test :shared:assembleTrueFindSharedReleaseXCFramework
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :shared:iosSimulatorArm64Test :shared:assembleTrueFindSharedReleaseXCFramework
 
       - name: Install XcodeGen and generate TrueFind.xcodeproj
         run: |
