@@ -9,7 +9,7 @@ struct FactCheckScreenshotIntent: AppIntent {
 
     @Parameter(
         title: "截圖圖片",
-        supportedContentTypes: [.image]
+        supportedTypeIdentifiers: [UTType.image.identifier]
     )
     var image: IntentFile
 
