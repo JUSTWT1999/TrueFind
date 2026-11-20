@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrueFind — Android 實際運作畫面分鏡</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0b0d12;
+        --card: #141821;
+        --border: #262c3a;
+        --foreground: #f1f5f9;
+        --muted-foreground: #94a3b8;
+        --primary: #3b82f6;
+        --primary-foreground: #ffffff;
+      }
+    }
+    .phone-frame {
+      aspect-ratio: 9 / 18.5;
+      border-radius: 26px;
+      border: 4px solid #27272a;
+      background: #ffffff;
+      color: #18181b;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.25);
+    }
+    .phone-dark {
+      background: #121316;
+      color: #f4f4f5;
+    }
+    .status-bar {
+      height: 24px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .nav-bar {
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-pill {
+      width: 68px;
+      height: 3.5px;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: 0.28;
+    }
+    .pulse-ring {
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.28), 0 4px 12px rgba(37, 99, 235, 0.45);
+    }
+    .tap-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 2.5px solid #ef4444;
+      background: rgba(239, 68, 68, 0.22);
+      position: absolute;
+      pointer-events: none;
+    }
+    .panel-card {
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .panel-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 p-0 font-sans">
+  <div class="max-w-6xl mx-auto px-5 py-6 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-[var(--border)]">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-sm">TF</span>
+          <h1 class="text-xl font-bold tracking-tight">TrueFind — Android 實際運作畫面分鏡</h1>
+        </div>
+        <p class="text-sm text-[var(--muted-foreground)] mt-1">
+          以「看社群貼文 → 懸浮球截圖 → 派發給 ChatGPT App 實核」為例。點擊任一格可放大檢視細節。
+        </p>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="inline-flex rounded-lg border border-[var(--border)] bg-[var(--card)] p-1 self-start">
+        <button id="btn-9" onclick="setMode('9')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition bg-[var(--primary)] text-[var(--primary-foreground)]">
+          完整 9 宮格分鏡
+        </button>
+        <button id="btn-4" onclick="setMode('4')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          核心 4 格流程
+        </button>
+      </div>
+    </div>
+
+    <!-- Storyboard Grid -->
+    <div id="storyboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <!-- PANEL 1 (core) -->
+      <div data-core="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-600/15 text-blue-500">STEP 01</span>
+          <span class="text-xs text-[var(--muted-foreground)]">瀏覽貼文・懸浮球待命</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame">
+            <div class="status-bar bg-white text-zinc-800">
+              <span>13:08</span>
+              <div class="flex items-center gap-1"><span>5G</span><span>86%</span></div>
+            </div>
+            <div class="px-3 py-1.5 border-b border-zinc-100 flex items-center justify-between">
+              <span class="font-extrabold text-xs tracking-tight">Threads</span>
+              <span class="text-[10px] text-zinc-400">為你推薦</span>
+            </div>
+            <div class="p-3 flex-1 text-[11px] leading-snug space-y-2 relative">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-[10px]">養</div>
+                <div>
+                  <div class="font-bold text-zinc-900">daily_health_tw</div>
+                  <div class="text-[9px] text-zinc-400">2 小時前</div>
+                </div>
+              </div>
+              <p class="text-zinc-800">
+                🚨 <b>震驚！哈佛醫學院 2026 最新研究指出</b>：每天早上喝冰水會讓腎臟過濾速度下降 40%，連續三個月提早老化 10 年！快轉給家人看！！
+              </p>
+              <div class="rounded-xl bg-gradient-to-br from-sky-100 to-blue-200 p-3 text-center border border-sky-200">
+                <div class="text-lg">🧊💧</div>
+                <div class="text-[10px] font-bold text-sky-950 mt-1">「喝冰水＝傷腎？」網瘋傳圖卡</div>
+              </div>
+              <div class="flex gap-3 text-[10px] text-zinc-400 pt-1">
+                <span>♥ 1.2萬</span><span>💬 842</span><span>↻ 5,310</span>
+              </div>
+              <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1">
+                <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex flex-col items-center justify-center pulse-ring border-2 border-white">
+                  <span class="text-[11px] font-black leading-none">✓</span>
+                  <span class="text-[7px] font-bold leading-none mt-0.5">查核</span>
+                </div>
+              </div>
+            </div>
+            <div class="nav-bar text-zinc-900"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">滑到可疑貼文</strong>：在 Threads / FB / IG / Line 看貼文時，TrueFind 半透明懸浮球靜靜貼在螢幕側邊，不遮擋閱讀。
+        </div>
+      </div>
+
+      <!-- PANEL 2 -->
+      <div data-core="false" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-600/15 text-blue-500">STEP 02</span>
+          <span class="text-xs text-[var(--muted-foreground)]">兩種一鍵觸發入口</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame phone-dark">
+            <div class="status-bar text-zinc-200">
+              <span>13:08</span>
+              <div class="flex items-center gap-1"><span>5G</span><span>86%</span></div>
+            </div>
+            <div class="px-3 pt-2 pb-3 bg-zinc-900 rounded-b-2xl space-y-2 border-b border-zinc-800">
+              <div class="text-[10px] text-zinc-400 font-medium">下拉狀態列快捷磁貼（免開懸浮球）</div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <div class="rounded-xl bg-zinc-800 px-2.5 py-2 text-[10px] text-zinc-300">Wi-Fi<div class="text-[8px] text-zinc-500">已連線</div></div>
+                <div class="rounded-xl bg-zinc-800 px-2.5 py-2 text-[10px] text-zinc-300">藍牙<div class="text-[8px] text-zinc-500">開啟</div></div>
+                <div class="rounded-xl bg-blue-600 px-2.5 py-2 text-[10px] text-white font-bold relative ring-2 ring-blue-300">
+                  ✓ TrueFind
+                  <div class="text-[8px] text-blue-100 font-normal">擷取畫面查核</div>
+                  <div class="tap-dot -right-1 -bottom-1"></div>
+                </div>
+                <div class="rounded-xl bg-zinc-800 px-2.5 py-2 text-[10px] text-zinc-300">勿擾<div class="text-[8px] text-zinc-500">關閉</div></div>
+              </div>
+            </div>
+            <div class="p-3 flex-1 flex flex-col justify-center gap-2 text-[10px]">
+              <div class="rounded-xl bg-zinc-800/80 border border-zinc-700 p-2.5 text-zinc-200 space-y-1">
+                <div class="font-bold text-blue-400">點懸浮球時的自動處理</div>
+                <div>1. 單點：單張截圖查核</div>
+                <div>2. 長按（或選長截圖）：進入捲動拼圖模式</div>
+                <div>3. 拖到底部「✕」可隨時收起</div>
+              </div>
+            </div>
+            <div class="nav-bar text-white"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">點一下觸發</strong>：可直接點側邊懸浮球（單張／長截圖），或下拉狀態列點 TrueFind 快捷磁貼（完全不開懸浮球也能用）。
+        </div>
+      </div>
+
+      <!-- PANEL 3 -->
+      <div data-core="false" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500">STEP 03</span>
+          <span class="text-xs text-[var(--muted-foreground)]">Play 合規單次擷取</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame relative">
+            <div class="status-bar bg-zinc-900/50 text-white">
+              <span>13:08</span><span>86%</span>
+            </div>
+            <div class="flex-1 bg-zinc-900/60 flex items-center justify-center p-3">
+              <div class="w-full rounded-2xl bg-white text-zinc-900 p-3.5 shadow-xl space-y-2.5">
+                <div class="flex justify-center">
+                  <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">📱</div>
+                </div>
+                <div class="text-[11px] font-bold text-center leading-tight">
+                  要使用 TrueFind 分享或錄製螢幕畫面嗎？
+                </div>
+                <div class="rounded-lg border border-zinc-200 px-2.5 py-1.5 text-[10px] flex items-center justify-between bg-zinc-50">
+                  <span>整個螢幕</span>
+                  <span class="text-zinc-400">▾</span>
+                </div>
+                <div class="text-[9px] text-zinc-500 leading-snug">
+                  僅擷取您指定的畫面（單張或捲動拼圖），完成後立即關閉，不會錄影。
+                </div>
+                <div class="flex justify-end gap-2 pt-1">
+                  <span class="text-[10px] text-zinc-500 px-2 py-1">取消</span>
+                  <span class="text-[10px] font-bold bg-blue-600 text-white px-3 py-1 rounded-full relative">
+                    立即開始
+                    <span class="tap-dot -right-2 -bottom-2"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="nav-bar bg-zinc-900/60 text-white"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">系統單次授權</strong>：Android 14+ 合規必經確認窗；若是長截圖模式，同一次授權內即可連續擷取多頁（最多 5 頁），不需重複彈窗。
+        </div>
+      </div>
+
+      <!-- PANEL 4 (core) -->
+      <div data-core="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-600/15 text-blue-500">STEP 04</span>
+          <span class="text-xs text-[var(--muted-foreground)]">TrueFind 查核選擇面板</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame relative">
+            <div class="status-bar bg-zinc-900/45 text-white"><span>13:08</span><span>86%</span></div>
+            <div class="flex-1 bg-zinc-900/45 flex flex-col justify-end">
+              <div class="bg-white rounded-t-3xl p-3 space-y-2.5 shadow-2xl text-zinc-900">
+                <div class="w-8 h-1 rounded-full bg-zinc-300 mx-auto"></div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-extrabold text-zinc-900">TrueFind 事實查核</span>
+                  <span class="text-[9px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-semibold">✂ 裁切範圍</span>
+                </div>
+
+                <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-1.5 flex items-center gap-2">
+                  <div class="w-11 h-12 rounded-lg bg-sky-100 border border-sky-200 flex flex-col items-center justify-center text-[8px] font-bold text-sky-900 shrink-0">
+                    🧊💧
+                    <span>貼文截圖</span>
+                  </div>
+                  <div class="text-[9px] text-zinc-600 leading-tight">
+                    <div class="font-semibold text-zinc-800">已擷取目前畫面</div>
+                    <div class="text-zinc-400 mt-0.5">私有快取・不寫入相簿</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-[9px] font-semibold text-zinc-500 mb-1">選擇查核模板</div>
+                  <div class="flex flex-wrap gap-1">
+                    <span class="text-[9px] font-bold px-2 py-1 rounded-full bg-blue-600 text-white">✓ 事實查核</span>
+                    <span class="text-[9px] px-2 py-1 rounded-full bg-zinc-100 text-zinc-700">找原始出處</span>
+                    <span class="text-[9px] px-2 py-1 rounded-full bg-zinc-100 text-zinc-700">查邏輯偏誤</span>
+                    <span class="text-[9px] px-2 py-1 rounded-full bg-zinc-100 text-zinc-700">翻譯＋查證</span>
+                  </div>
+                </div>
+
+                <div class="rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-1.5 text-[9px] text-zinc-600 leading-snug">
+                  請對這張圖片中的貼文進行事實查核：列出主張、逐項查證來源、給出可信度結論…
+                </div>
+
+                <div>
+                  <div class="text-[9px] font-semibold text-zinc-500 mb-1.5">點選 AI App 立即送出</div>
+                  <div class="grid grid-cols-4 gap-1.5 text-center">
+                    <div class="flex flex-col items-center gap-0.5 relative">
+                      <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center ring-2 ring-emerald-300">GPT</div>
+                      <span class="text-[8px] font-bold text-zinc-900">ChatGPT</span>
+                      <div class="tap-dot -top-1 -right-0.5"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-0.5">
+                      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-white font-black text-[11px] flex items-center justify-center">✦</div>
+                      <span class="text-[8px] text-zinc-600">Gemini</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-0.5">
+                      <div class="w-9 h-9 rounded-xl bg-teal-700 text-white font-bold text-[10px] flex items-center justify-center">P</div>
+                      <span class="text-[8px] text-zinc-600">Perplexity</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-0.5">
+                      <div class="w-9 h-9 rounded-xl bg-zinc-200 text-zinc-700 font-bold text-[10px] flex items-center justify-center">⋯</div>
+                      <span class="text-[8px] text-zinc-600">其他</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="nav-bar bg-white text-zinc-900"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">底部選擇面板</strong>：直接蓋在貼文上。確認截圖（或長截圖拼圖）、挑選查核模板後，<strong>點一下 ChatGPT（或 Gemini）圖示就立刻派發</strong>。
+        </div>
+      </div>
+
+      <!-- PANEL 5 -->
+      <div data-core="false" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-500/15 text-[var(--muted-foreground)]">STEP 05（選用）</span>
+          <span class="text-xs text-[var(--muted-foreground)]">快速裁切個資／重點</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame phone-dark">
+            <div class="status-bar text-zinc-200"><span>13:08</span><span>86%</span></div>
+            <div class="px-3 py-1.5 flex items-center justify-between border-b border-zinc-800 text-[10px]">
+              <span class="text-zinc-400">取消</span>
+              <span class="font-bold text-white">裁切查核範圍</span>
+              <span class="font-bold text-blue-400">完成</span>
+            </div>
+            <div class="flex-1 p-3 relative flex flex-col justify-center bg-black/80">
+              <div class="opacity-30 text-[9px] text-zinc-400 mb-1 px-1">（上方帳號頭像／狀態列已排除）</div>
+              <div class="rounded-lg bg-white text-zinc-900 p-2.5 border-2 border-blue-400 relative shadow-lg">
+                <div class="w-2.5 h-2.5 bg-blue-400 rounded-full absolute -top-1.5 -left-1.5"></div>
+                <div class="w-2.5 h-2.5 bg-blue-400 rounded-full absolute -top-1.5 -right-1.5"></div>
+                <div class="w-2.5 h-2.5 bg-blue-400 rounded-full absolute -bottom-1.5 -left-1.5"></div>
+                <div class="w-2.5 h-2.5 bg-blue-400 rounded-full absolute -bottom-1.5 -right-1.5"></div>
+                <p class="text-[9.5px] leading-snug">
+                  🚨 <b>哈佛醫學院 2026 最新研究指出</b>：每天早上喝冰水會讓腎臟過濾速度下降 40%，連續三個月提早老化 10 年！
+                </p>
+              </div>
+              <div class="opacity-30 text-[9px] text-zinc-400 mt-1 px-1">（下方留言區已排除）</div>
+            </div>
+            <div class="nav-bar text-white"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">保護隱私＆聚焦重點</strong>：若是 Line 聊天截圖或長文，點「裁切範圍」拉一下框，只把要查的那段話送給 AI，辨識更精準。
+        </div>
+      </div>
+
+      <!-- PANEL 6 -->
+      <div data-core="false" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-600/15 text-emerald-500">STEP 06</span>
+          <span class="text-xs text-[var(--muted-foreground)]">底層派發＋剪貼簿防呆</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame phone-dark">
+            <div class="status-bar text-zinc-200"><span>13:08</span><span>86%</span></div>
+            <div class="flex-1 p-3 flex flex-col justify-center gap-2.5">
+              <div class="text-center text-[11px] font-bold text-emerald-400">正在交接給 ChatGPT…</div>
+              <div class="rounded-xl bg-zinc-900 border border-zinc-700 p-2.5 space-y-1.5 text-[9.5px] font-mono text-zinc-300">
+                <div class="text-emerald-400 font-bold">Explicit ACTION_SEND</div>
+                <div>pkg: <span class="text-white">com.openai.chatgpt</span></div>
+                <div>img: <span class="text-sky-300">content://.../cap.png</span></div>
+                <div>txt: <span class="text-amber-300">事實查核 Prompt</span></div>
+                <div>perm: <span class="text-zinc-400">READ_URI_ONCE</span></div>
+              </div>
+              <div class="mt-2 rounded-full bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-[9px] text-center text-zinc-100 shadow-lg">
+                📋 查核指令已同步複製（未自動帶入時可直接貼上）
+              </div>
+            </div>
+            <div class="nav-bar text-white"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">0.3 秒背景交接</strong>：透過 <code>FileProvider</code> 單次授權傳圖並送出 <code>EXTRA_TEXT</code>，同時自動複製 Prompt 到剪貼簿防呆。
+        </div>
+      </div>
+
+      <!-- PANEL 7 (core) -->
+      <div data-core="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-600/15 text-emerald-500">STEP 07</span>
+          <span class="text-xs text-[var(--muted-foreground)]">切進 ChatGPT・就位待送</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame phone-dark">
+            <div class="status-bar text-zinc-200"><span>13:08</span><span>86%</span></div>
+            <div class="px-3 py-2 flex items-center justify-between border-b border-zinc-800 relative">
+              <span class="text-zinc-400 text-xs">☰</span>
+              <span class="text-[11px] font-bold text-white bg-zinc-800 px-2.5 py-0.5 rounded-full border border-emerald-400/70">
+                ChatGPT 5 ▾
+              </span>
+              <span class="text-zinc-400 text-xs">✎</span>
+            </div>
+            <div class="px-3 pt-2">
+              <div class="rounded-lg bg-emerald-500/15 border border-emerald-500/40 px-2 py-1 text-[9px] text-emerald-300 text-center">
+                ↑ 需要時可順手在這裡切換 Model
+              </div>
+            </div>
+            <div class="flex-1 flex items-center justify-center text-zinc-600 text-[10px]">
+              新對話已就緒
+            </div>
+            <div class="p-2.5 space-y-1.5">
+              <div class="rounded-2xl bg-zinc-800 border border-zinc-700 p-2 space-y-1.5">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-9 h-9 rounded-lg bg-sky-200 text-sky-950 flex items-center justify-center text-xs border border-zinc-600 relative">
+                    🧊
+                    <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-zinc-900 text-white text-[8px] flex items-center justify-center">×</span>
+                  </div>
+                  <span class="text-[8.5px] text-emerald-400">✓ 已自動附加截圖</span>
+                </div>
+                <div class="flex items-end gap-1.5">
+                  <div class="flex-1 text-[9px] text-zinc-100 leading-snug">
+                    請對這張圖片中的貼文進行事實查核：1) 列出主張 2) 逐項查證來源 3) 給出結論…
+                  </div>
+                  <div class="w-6 h-6 rounded-full bg-white text-black font-black text-xs flex items-center justify-center shrink-0 relative">
+                    ↑
+                    <div class="tap-dot -top-1.5 -right-1.5"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="nav-bar text-white"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">直接落地 ChatGPT 輸入框</strong>：截圖與查核指令都已備妥！要換模型可在頂部順手切換，點一下「↑」即開始聯網查核。
+        </div>
+      </div>
+
+      <!-- PANEL 8 (core) -->
+      <div data-core="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-600/15 text-emerald-500">STEP 08</span>
+          <span class="text-xs text-[var(--muted-foreground)]">結構化事實查核結果</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame phone-dark">
+            <div class="status-bar text-zinc-200"><span>13:09</span><span>86%</span></div>
+            <div class="px-3 py-1.5 flex items-center justify-between border-b border-zinc-800 text-[10px]">
+              <span class="text-zinc-400">☰</span>
+              <span class="font-bold text-white">ChatGPT 5</span>
+              <span class="text-zinc-400">⋯</span>
+            </div>
+            <div class="p-2.5 flex-1 space-y-2 overflow-hidden text-[9.5px] leading-snug">
+              <div class="ml-auto max-w-[82%] rounded-2xl bg-zinc-800 p-2 text-zinc-200">
+                <span class="text-[8px] text-sky-300 block mb-0.5">[已附截圖]</span>
+                請對圖片中的貼文進行事實查核…
+              </div>
+              <div class="space-y-1.5 text-zinc-100">
+                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-500/20 border border-red-500/40 text-red-300 font-bold text-[9px]">
+                  ⚠ 查核結論：不實說法
+                </div>
+                <div class="space-y-1 text-zinc-300">
+                  <div><b class="text-white">1. 哈佛 2026 研究？</b><br/>查無此研究，屬常見拼湊式網路謠言。</div>
+                  <div><b class="text-white">2. 喝冰水傷腎老化？</b><br/>腎臟科醫學共識：水溫會由消化道迅速平衡，不影響健康人腎功能。</div>
+                </div>
+                <div class="flex gap-1 pt-0.5">
+                  <span class="text-[8px] px-1.5 py-0.5 rounded bg-zinc-800 text-blue-300 border border-zinc-700">🔗 事實查核中心</span>
+                  <span class="text-[8px] px-1.5 py-0.5 rounded bg-zinc-800 text-blue-300 border border-zinc-700">🔗 腎臟醫學會</span>
+                </div>
+              </div>
+            </div>
+            <div class="nav-bar text-white"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">取得查核報告</strong>：吃你原本的 ChatGPT 訂閱與聯網搜尋能力，直接得到結構化真偽判斷與來源連結；按返回鍵即可回到原貼文。
+        </div>
+      </div>
+
+      <!-- PANEL 9 -->
+      <div data-core="false" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400">BONUS 09</span>
+          <span class="text-xs text-[var(--muted-foreground)]">純文字／分享・零彈窗捷徑</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="phone-frame">
+            <div class="status-bar bg-white text-zinc-800"><span>13:10</span><span>85%</span></div>
+            <div class="px-3 py-1.5 border-b border-zinc-100 text-[10px] font-bold text-zinc-700">新聞／網頁文章</div>
+            <div class="p-3 flex-1 text-[10px] leading-relaxed text-zinc-700 space-y-2 relative">
+              <p>近期社群流傳一則訊息，宣稱</p>
+              <div class="inline-flex items-center rounded-lg bg-zinc-900 text-white text-[9px] px-1.5 py-1 shadow-lg gap-2 mb-1">
+                <span class="text-zinc-400">複製</span>
+                <span class="text-zinc-400">分享</span>
+                <span class="font-bold text-blue-300 bg-blue-600/30 px-1.5 py-0.5 rounded relative">
+                  ✓ TrueFind 查核
+                  <span class="tap-dot -right-2 -top-2"></span>
+                </span>
+              </div>
+              <p class="bg-blue-100 text-blue-950 rounded px-1 py-0.5">
+                「央行將於下月起全面停用實體千元鈔，改以數位憑證取代」
+              </p>
+              <p class="text-zinc-500">引發許多民眾轉傳討論…</p>
+
+              <div class="mt-3 rounded-xl bg-purple-50 border border-purple-200 p-2 text-[9px] text-purple-900">
+                <b>⚡ 完全免截圖、免系統確認窗</b><br/>
+                支援「反白選字」、「系統分享連結」與「系統原生長截圖分享」，直接跳進 STEP 04！
+              </div>
+            </div>
+            <div class="nav-bar text-zinc-900"><div class="nav-pill"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">零彈窗支線入口</strong>：看可複製文字的新聞、Line 訊息或已拍好的系統長截圖，反白點「TrueFind 查核」或直接「分享」，跳過確認窗直接選 AI 送出。
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Legend -->
+    <div class="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[var(--muted-foreground)]">
+      <div>
+        <strong class="text-[var(--foreground)]">實際體感步驟數：</strong>
+        純文字／分享路徑 <span class="font-semibold text-[var(--foreground)]">2 步</span>（選分享 → 點 AI）｜截圖路徑 <span class="font-semibold text-[var(--foreground)]">3～4 步</span>（點懸浮球 → 立即開始 → 點 AI → ChatGPT 按送出）。
+      </div>
+      <div class="text-[11px] shrink-0">點擊任一卡片可放大預覽</div>
+    </div>
+  </div>
+
+  <!-- Zoom Modal -->
+  <div id="zoom-modal" onclick="closeZoom(event)" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl max-w-md w-full p-5 space-y-4 relative shadow-2xl" onclick="event.stopPropagation()">
+      <button onclick="hideModal()" class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-xs font-bold flex items-center justify-center hover:opacity-80">✕</button>
+      <div id="zoom-content" class="flex flex-col gap-3"></div>
+    </div>
+  </div>
+
+  <script>
+    function setMode(mode) {
+      const grid = document.getElementById('storyboard-grid');
+      const cards = grid.querySelectorAll('.panel-card');
+      const btn9 = document.getElementById('btn-9');
+      const btn4 = document.getElementById('btn-4');
+
+      if (mode === '4') {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5';
+        cards.forEach(c => {
+          c.style.display = c.dataset.core === 'true' ? 'flex' : 'none';
+        });
+        btn4.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition bg-[var(--primary)] text-[var(--primary-foreground)]';
+        btn9.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]';
+      } else {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5';
+        cards.forEach(c => {
+          c.style.display = 'flex';
+        });
+        btn9.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition bg-[var(--primary)] text-[var(--primary-foreground)]';
+        btn4.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]';
+      }
+    }
+
+    function openZoom(cardEl) {
+      const modal = document.getElementById('zoom-modal');
+      const target = document.getElementById('zoom-content');
+      target.innerHTML = cardEl.innerHTML;
+      const phoneWrap = target.querySelector('.w-56');
+      if (phoneWrap) {
+        phoneWrap.classList.remove('w-56');
+        phoneWrap.classList.add('w-64');
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function hideModal() {
+      document.getElementById('zoom-modal').classList.add('hidden');
+    }
+
+    function closeZoom(e) {
+      if (e.target.id === 'zoom-modal') hideModal();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hideModal();
+    });
+  </script>
+</body>
+</html>
