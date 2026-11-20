@@ -7,12 +7,13 @@
     <string name="notification_channel_bubble">懸浮快捷球</string>
     <string name="notification_channel_capture">螢幕截圖服務</string>
     <string name="bubble_notification_title">TrueFind 懸浮球運作中</string>
-    <string name="bubble_notification_text">單點截圖查核，長按進入捲動長截圖</string>
+    <string name="bubble_notification_text">短按單張查核；按住 0.5 秒展開截圖／捲動截圖雙圓圈</string>
     <string name="bubble_action_stop">關閉懸浮球</string>
     <string name="capture_notification_title">TrueFind 畫面擷取中</string>
     <string name="capture_notification_text">僅擷取您指定的畫面，完成後立即關閉</string>
     <string name="error_secure_screen">此 App 基於隱私保護禁止截圖，建議改用反白複製或分享文字</string>
     <string name="error_capture_failed">畫面擷取失敗，請再試一次</string>
     <string name="toast_dispatched_template">已送往 %1$s（若指令未自動帶入，點一下貼上即可）</string>
+    <string name="toast_dispatched_gemini">圖片已送往 Gemini，查核指令已複製 — 點輸入框貼上即可</string>
     <string name="toast_prompt_copied">查核指令已複製到剪貼簿</string>
 </resources>

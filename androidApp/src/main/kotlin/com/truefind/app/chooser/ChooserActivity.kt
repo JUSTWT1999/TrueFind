@@ -25,7 +25,7 @@ class ChooserActivity : ComponentActivity() {
 
         val initialPayload = CapturePayload.fromIntent(intent)
         if (initialPayload == null) {
-            finish()
+            finishAndRemoveTask()
             return
         }
 
@@ -45,7 +45,7 @@ class ChooserActivity : ComponentActivity() {
                 val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
                 ModalBottomSheet(
-                    onDismissRequest = { finish() },
+                    onDismissRequest = { finishAndRemoveTask() },
                     sheetState = sheetState
                 ) {
                     ChooserSheetContent(
@@ -66,12 +66,12 @@ class ChooserActivity : ComponentActivity() {
                         onDispatchTarget = { target ->
                             container.settingsStore.lastTemplateId = selectedTemplate.id
                             container.aiDispatcher.dispatchToTarget(target, payload, promptDraft)
-                            finish()
+                            finishAndRemoveTask()
                         },
                         onDispatchOther = {
                             container.settingsStore.lastTemplateId = selectedTemplate.id
                             container.aiDispatcher.dispatchWithSystemChooser(payload, promptDraft)
-                            finish()
+                            finishAndRemoveTask()
                         }
                     )
                 }
@@ -100,7 +100,11 @@ class ChooserActivity : ComponentActivity() {
         fun launch(context: Context, payload: CapturePayload) {
             val intent = Intent(context, ChooserActivity::class.java).apply {
                 payload.writeToIntent(this)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP
+                )
             }
             context.startActivity(intent)
         }

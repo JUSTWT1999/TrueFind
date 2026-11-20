@@ -52,7 +52,8 @@
             android:name=".capture.ScreenCaptureActivity"
             android:excludeFromRecents="true"
             android:exported="false"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
             android:theme="@style/Theme.TrueFind.Translucent" />
 
         <activity
@@ -60,6 +61,7 @@
             android:excludeFromRecents="true"
             android:exported="true"
             android:label="@string/process_text_label"
+            android:taskAffinity=""
             android:theme="@style/Theme.TrueFind.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -82,6 +84,8 @@
             android:name=".chooser.ChooserActivity"
             android:excludeFromRecents="true"
             android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
             android:theme="@style/Theme.TrueFind.Translucent"
             android:windowSoftInputMode="adjustResize" />
 

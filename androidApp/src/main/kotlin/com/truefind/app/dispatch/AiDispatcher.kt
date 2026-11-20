@@ -28,11 +28,12 @@ class AiDispatcher(
 
         val intent = buildSendIntent(payload, finalPrompt, target.androidPackageName) ?: return false
         return try {
-            Toast.makeText(
-                context,
-                context.getString(R.string.toast_dispatched_template, target.displayName),
-                Toast.LENGTH_LONG
-            ).show()
+            val toastText = if (target.id == "gemini" && payload.hasImage) {
+                context.getString(R.string.toast_dispatched_gemini)
+            } else {
+                context.getString(R.string.toast_dispatched_template, target.displayName)
+            }
+            Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
             context.startActivity(intent)
             true
         } catch (_: ActivityNotFoundException) {

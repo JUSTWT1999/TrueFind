@@ -99,21 +99,15 @@ fun ChooserSheetContent(
                     }
                 }
             }
-
-            if (payload.hasImage) {
-                OutlinedButton(onClick = onRequestCrop) {
-                    Text("✂ 裁切範圍", fontSize = 12.sp)
-                }
-            }
         }
 
-        // Capture preview
-        CapturePreviewCard(payload = payload)
+        // Capture preview with inline optional crop action
+        CapturePreviewCard(payload = payload, onRequestCrop = onRequestCrop)
 
         // Prompt template chips
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
-                text = "選擇查核模板",
+                text = "1. 查核類型",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -172,7 +166,7 @@ fun ChooserSheetContent(
         // One-tap AI App launcher row
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
-                text = "點選 AI App 立即送出查核",
+                text = "2. 點選 AI 立即送出",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -219,7 +213,10 @@ fun ChooserSheetContent(
 }
 
 @Composable
-private fun CapturePreviewCard(payload: CapturePayload) {
+private fun CapturePreviewCard(
+    payload: CapturePayload,
+    onRequestCrop: () -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -244,7 +241,7 @@ private fun CapturePreviewCard(payload: CapturePayload) {
                         contentDescription = "已擷取畫面縮圖",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(width = 64.dp, height = 84.dp)
+                            .size(width = 60.dp, height = 78.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .border(
                                 1.dp,
@@ -253,11 +250,14 @@ private fun CapturePreviewCard(payload: CapturePayload) {
                             )
                     )
                 }
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     val title = when (payload.source) {
                         CaptureSource.SCROLL_STITCH -> "已拼接長截圖（${payload.frameCount} 頁）"
                         CaptureSource.SHARE_IMAGE -> "已接收分享圖片"
-                        else -> "已擷取目前畫面"
+                        else -> "已擷取目標畫面"
                     }
                     Text(
                         text = title,
@@ -265,10 +265,13 @@ private fun CapturePreviewCard(payload: CapturePayload) {
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "僅暫存於本機私有快取・不寫入相簿・無網路權限",
+                        text = "可先裁切重點，或直接點下方 AI 送出",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                OutlinedButton(onClick = onRequestCrop) {
+                    Text("✂ 裁切", fontSize = 12.sp)
                 }
             }
         } else {

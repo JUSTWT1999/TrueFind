@@ -17,7 +17,7 @@ class ShareReceiverActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleIncomingIntent(intent)
-        finish()
+        finishAndRemoveTask()
     }
 
     private fun handleIncomingIntent(incoming: Intent?) {

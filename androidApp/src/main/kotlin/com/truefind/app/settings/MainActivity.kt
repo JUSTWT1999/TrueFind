@@ -140,6 +140,7 @@ class MainActivity : ComponentActivity() {
                     onRequestOverlayPermission = { openOverlayPermissionSettings() },
                     onRequestAddTile = { requestQuickSettingsTile() },
                     onStartSingleCapture = {
+                        moveTaskToBack(true)
                         startActivity(ScreenCaptureActivity.createIntent(this, CaptureMode.SINGLE))
                     },
                     onStartScrollCapture = {
@@ -147,6 +148,7 @@ class MainActivity : ComponentActivity() {
                             Toast.makeText(this, "捲動拼圖需要「顯示在其他應用程式上層」權限", Toast.LENGTH_SHORT).show()
                             openOverlayPermissionSettings()
                         } else {
+                            moveTaskToBack(true)
                             startActivity(ScreenCaptureActivity.createIntent(this, CaptureMode.SCROLL_STITCH))
                         }
                     },
@@ -297,7 +299,7 @@ private fun MainSettingsScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "單點：單張截圖查核｜長按：捲動長截圖拼圖（最多 5 頁）",
+                                text = "短按：單張查核｜按壓 0.5 秒：向旁生出「截圖／捲動截圖」純圖示雙圓圈",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -325,13 +327,13 @@ private fun MainSettingsScreen(
                             onClick = onStartSingleCapture,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("單張截圖")
+                            Text("選 App 單張查核")
                         }
                         OutlinedButton(
                             onClick = onStartScrollCapture,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("捲動長截圖")
+                            Text("選 App 捲動接圖")
                         }
                     }
 

@@ -3,7 +3,9 @@ package com.truefind.app.capture
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +14,7 @@ import androidx.core.content.ContextCompat
 class ScreenCaptureActivity : ComponentActivity() {
 
     private var mode: CaptureMode = CaptureMode.SINGLE
-    private var delayMs: Long = 160L
+    private var delayMs: Long = DEFAULT_CAPTURE_DELAY_MS
 
     private val projectionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -27,38 +29,49 @@ class ScreenCaptureActivity : ComponentActivity() {
                 )
                 ContextCompat.startForegroundService(this, serviceIntent)
             } else {
-                // User cancelled consent dialog — quietly restore floating bubble if active
                 FloatingBubbleService.setBubbleVisible(this, visible = true)
             }
-            finish()
+            finishAndRemoveTask()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val modeName = intent.getStringExtra(EXTRA_MODE)
         mode = CaptureMode.entries.firstOrNull { it.name == modeName } ?: CaptureMode.SINGLE
-        delayMs = intent.getLongExtra(EXTRA_DELAY_MS, 160L).coerceIn(100L, 600L)
+        delayMs = intent.getLongExtra(EXTRA_DELAY_MS, DEFAULT_CAPTURE_DELAY_MS).coerceIn(250L, 800L)
 
-        // Ensure floating bubble stays hidden while consent + screenshot run
         FloatingBubbleService.setBubbleVisible(this, visible = false)
 
         val projectionManager =
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        projectionLauncher.launch(projectionManager.createScreenCaptureIntent())
+        val captureIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Defaults Android 14/15 system dialog to single-app capture while remaining Play compliant.
+            projectionManager.createScreenCaptureIntent(
+                MediaProjectionConfig.createConfigForUserChoice()
+            )
+        } else {
+            projectionManager.createScreenCaptureIntent()
+        }
+        projectionLauncher.launch(captureIntent)
     }
 
     companion object {
         private const val EXTRA_MODE = "com.truefind.extra.CAPTURE_MODE"
         private const val EXTRA_DELAY_MS = "com.truefind.extra.DELAY_MS"
+        const val DEFAULT_CAPTURE_DELAY_MS = 360L
 
         fun createIntent(
             context: Context,
             mode: CaptureMode = CaptureMode.SINGLE,
-            delayMs: Long = 160L
+            delayMs: Long = DEFAULT_CAPTURE_DELAY_MS
         ): Intent = Intent(context, ScreenCaptureActivity::class.java).apply {
             putExtra(EXTRA_MODE, mode.name)
             putExtra(EXTRA_DELAY_MS, delayMs)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_MULTIPLE_TASK or
+                    Intent.FLAG_ACTIVITY_NO_ANIMATION
+            )
         }
     }
 }
