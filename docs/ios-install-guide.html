@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrueFind iPhone（iOS）安裝與使用說明</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-soft: #eff6ff;
+      --amber-bg: #fffbeb;
+      --amber-border: #fcd34d;
+      --amber-text: #92400e;
+      --green-bg: #f0fdf4;
+      --green-border: #86efac;
+      --green-text: #166534;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 32px 20px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 44px;
+      box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.08);
+    }
+
+    .header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      margin: 8px 0 14px;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    .meta-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+    }
+
+    section {
+      margin-bottom: 28px;
+      break-inside: avoid;
+    }
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      margin: 0 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h3 {
+      font-size: 15.5px;
+      margin: 16px 0 6px;
+      color: var(--text);
+    }
+
+    p {
+      margin: 8px 0;
+    }
+
+    ol, ul {
+      margin: 8px 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    code {
+      font-family: Consolas, "SFMono-Regular", Menlo, Monaco, monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 1px solid #e2e8f0;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .callout {
+      margin-top: 12px;
+      padding: 12px 15px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      line-height: 1.65;
+    }
+
+    .callout-tip {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      color: var(--green-text);
+    }
+
+    .callout-warn {
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      color: var(--amber-text);
+    }
+
+    .shortcut-box {
+      margin: 12px 0;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+    }
+
+    .shortcut-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .shortcut-arrow {
+      text-align: center;
+      color: var(--primary);
+      font-weight: 800;
+      margin: 4px 0;
+      font-size: 14px;
+    }
+
+    .faq-item {
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fcfdff;
+      margin-bottom: 10px;
+      break-inside: avoid;
+    }
+
+    .faq-q {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .faq-a {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12.5px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @page {
+      size: A4;
+      margin: 14mm 14mm 16mm 14mm;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+        font-size: 13.5px;
+      }
+      .page {
+        max-width: 100%;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+      }
+      a {
+        color: #1d4ed8;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div class="brand-row">
+        <div class="logo">TF</div>
+        <h1>TrueFind iPhone（iOS）安裝與使用說明</h1>
+      </div>
+      <p class="subtitle">
+        免 Mac 電腦！直接從 Windows 電腦將 GitHub Actions 建置好的 TrueFind iOS 版安裝至實體 iPhone，並設定「背面輕點兩下」0 彈窗一鍵事實查核。
+      </p>
+      <div class="meta-pills">
+        <span class="pill">支援 iOS 16.0 以上</span>
+        <span class="pill">Windows + USB 傳輸線</span>
+        <span class="pill">免費 Apple ID 即可安裝</span>
+        <span class="pill">零網路權限・隱私優先</span>
+      </div>
+    </header>
+
+    <section>
+      <h2><span class="step-badge">1</span> 事前準備（Windows 電腦）</h2>
+      <ol>
+        <li>
+          <strong>安裝 Apple 官方傳統版 iTunes 與 iCloud</strong>（Sideloadly 必要元件，<strong>請勿從 Microsoft Store 安裝</strong>）：
+          <ul>
+            <li>iTunes（Windows 64-bit 傳統安裝檔）：<a href="https://www.apple.com/itunes/download/win64">https://www.apple.com/itunes/download/win64</a></li>
+            <li>iCloud for Windows（傳統安裝檔，Sideloadly 官網亦提供連結）：<a href="https://sideloadly.io/">https://sideloadly.io/</a></li>
+          </ul>
+        </li>
+        <li>
+          <strong>下載並安裝 Sideloadly</strong>（免費 iOS 側載簽章工具）：<br />
+          官網下載：<a href="https://sideloadly.io/">https://sideloadly.io/</a>
+        </li>
+      </ol>
+      <div class="callout callout-tip">
+        <strong>小提示：</strong>若希望每 7 天透過同一個 Wi-Fi 全自動背景續簽，也可以改用 <a href="https://altstore.io/">AltStore</a>；若希望初次安裝步驟最簡單，建議先用 <strong>Sideloadly</strong>。
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="step-badge">2</span> 下載最新版 iPhone <code>.ipa</code> 安裝檔</h2>
+      <ol>
+        <li>打開專案的 GitHub Actions 頁面：<br />
+          <a href="https://github.com/JUSTWT1999/TrueFind/actions">https://github.com/JUSTWT1999/TrueFind/actions</a>
+        </li>
+        <li>點進最新一筆<strong>綠色打勾</strong>的 <code>TrueFind CI (Android &amp; iOS)</code> 建置紀錄。</li>
+        <li>滑到頁面最底部的 <strong>Artifacts</strong> 區塊，點擊下載 <strong><code>TrueFind-iOS-Unsigned-IPA</code></strong>。</li>
+        <li>將下載下來的 <code>.zip</code> 壓縮檔<strong>解壓縮</strong>，取出裡面的 <strong><code>TrueFind-iOS-unsigned.ipa</code></strong>。</li>
+      </ol>
+      <div class="callout callout-warn">
+        <strong>注意：</strong>請務必先解壓取出 <code>.ipa</code> 檔案，不能把 <code>.zip</code> 直接拖進 Sideloadly。
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="step-badge">3</span> 用 Sideloadly 安裝到 iPhone</h2>
+      <ol>
+        <li>用 USB 傳輸線將 iPhone 連接到 Windows 電腦。若 iPhone 跳出「<strong>要信任這部電腦嗎？</strong>」，請點「<strong>信任</strong>」並輸入解鎖密碼。</li>
+        <li>打開電腦上的 <strong>Sideloadly</strong>：
+          <ul>
+            <li><strong>iDevice</strong>：確認已偵測到你的 iPhone 型號。</li>
+            <li><strong>IPA</strong>：將解壓後的 <code>TrueFind-iOS-unsigned.ipa</code> 拖曳到左側 <code>IPA</code> 圖示框。</li>
+            <li><strong>Apple ID</strong>：輸入你的 Apple ID Email（若不想用主帳號，可另行免費申請備用 Apple ID）。</li>
+            <li>（選用）展開 <strong>Advanced Options</strong> 可勾選 Wi-Fi 自動續簽（Auto Refresh）。</li>
+          </ul>
+        </li>
+        <li>點擊 <strong>Start</strong>，依提示輸入 Apple ID 密碼與 6 位數雙重驗證碼。</li>
+        <li>等待進度顯示 <strong><code>Done.</code></strong>，iPhone 桌面就會出現 <strong>TrueFind</strong> 圖示！</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><span class="step-badge">4</span> 首次開啟前必做的 2 項 iPhone 系統設定</h2>
+      <p>剛側載完成直接點開 App 會被 iOS 阻擋，請先完成以下兩步（只需做一次）：</p>
+      <ol>
+        <li>
+          <strong>信任開發者憑證</strong>：<br />
+          前往 iPhone <strong>「設定 → 一般 → VPN 與裝置管理」</strong> → 在「開發者 App」下方點選你的 Apple ID → 點 <strong>「信任」</strong>。
+        </li>
+        <li>
+          <strong>開啟開發者模式（iOS 16 以上必做）</strong>：<br />
+          前往 iPhone <strong>「設定 → 隱私權與安全性」</strong> → 滑到最下方點 <strong>「開發者模式」</strong> → 開啟開關並依提示<strong>重新開機</strong> → 重開後輸入密碼確認開啟。
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><span class="step-badge">5</span> 設定「背面輕點兩下」0 彈窗一鍵截圖查核（約 30 秒）</h2>
+      <p>
+        「背面輕點（Back Tap）」是 iPhone 8 以上內建的官方手勢：看貼文時用食指在 <strong>iPhone 機背蘋果 Logo 附近輕輕敲兩下（叩、叩）</strong>，系統會自動靜默截圖並瞬間彈出 TrueFind 查核面板。
+      </p>
+
+      <h3>步驟 A：建立 2 行 Apple 捷徑</h3>
+      <ol>
+        <li>打開 iPhone 內建的 <strong>「捷徑（Shortcuts）」App</strong>，點右上角 <strong><code>＋</code></strong>。</li>
+        <li>依序加入下列兩個動作，並將捷徑命名為 <strong>「TrueFind 查核」</strong> 後點完成：</li>
+      </ol>
+      <div class="shortcut-box">
+        <div class="shortcut-step">1. 📷 拍攝截圖</div>
+        <div class="shortcut-arrow">↓（系統會自動將螢幕截圖帶入下一步）</div>
+        <div class="shortcut-step">2. ✓ TrueFind：事實查核截圖</div>
+      </div>
+
+      <h3>步驟 B：綁定手勢</h3>
+      <ul>
+        <li><strong>一般 iPhone（iPhone 8 以上）</strong>：前往 <strong>「設定 → 輔助使用 → 觸控 → 背面輕點 → 點兩下」</strong> → 滑到最下方「捷徑」區選 <strong>「TrueFind 查核」</strong>。</li>
+        <li><strong>iPhone 15 Pro / 16 以上</strong>：也可前往 <strong>「設定 → 動作按鈕 → 捷徑」</strong> 選擇 <strong>「TrueFind 查核」</strong>，按一下側邊實體按鈕即可查核。</li>
+      </ul>
+
+      <div class="callout callout-tip">
+        <strong>首次執行提醒：</strong>第一次輕點背面兩下時，iOS 會跳一次確認「是否允許捷徑將截圖分享給 TrueFind？」→ 請點 <strong>「永遠允許」</strong>，之後即可享有完全 0 彈窗直達體驗！
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="step-badge">6</span> 其他兩種使用方式（系統分享＆長截圖自動拼接）</h2>
+      <ul>
+        <li>
+          <strong>系統分享延伸功能（Share Extension）</strong>：在 Threads / Facebook / Safari / 新聞頁點「分享 → <strong>TrueFind 查核</strong>」（Safari 可先拍「整頁截圖」直接分享）。在相簿一次勾選 <strong>2～5 張連續截圖</strong>分享給 TrueFind，會自動去除重疊處拼成 1 張長圖！
+        </li>
+        <li>
+          <strong>App 內免權限選圖拼接</strong>：打開 TrueFind 主頁點 <strong>「從相簿挑選 1～5 張截圖拼接查核（免相簿權限）」</strong>，同樣支援裁切與一鍵派發給 ChatGPT / Gemini。
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="step-badge">7</span> 常見問題（FAQ）</h2>
+
+      <div class="faq-item">
+        <div class="faq-q">Q1：免費 Apple ID 側載 7 天到期怎麼辦？</div>
+        <p class="faq-a">
+          TrueFind 本身沒有任何期限限制，7 天是 Apple 對免費個人側載憑證的系統規定。到期時只要用 Sideloadly 把同一個 <code>.ipa</code> 再覆蓋安裝一次（或開啟 Wi-Fi 自動續簽），原本設定的查核模板與捷徑都會完整保留。若未來以 Apple Developer 帳號（US$99／年）發佈至 TestFlight 為 90 天有效，正式上架 App Store 則為永久無期限。
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Q2：安裝時出現 <code>Maximum number of apps / App IDs</code> 錯誤？</div>
+        <p class="faq-a">
+          免費 Apple ID 在同一支 iPhone 最多同時側載 3 個 App，且 7 天上限 10 個 App ID。TrueFind 含「主 App ＋ Share Extension」共佔 2 個 App ID。若額度不足，可先移除其他側載 App，或在 Sideloadly 的 <code>Advanced Options</code> 勾選 <code>Remove PlugIns</code>（只裝主 App、僅佔 1 個 App ID，背面輕點與相簿選圖仍可正常使用）。
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Q3：送到 Gemini 時只有照片進去、文字沒有自動填入？</div>
+        <p class="faq-a">
+          這是 Gemini App 的接收行為限制。TrueFind 派發前已自動將最終查核指令複製到 iPhone 剪貼簿，進到 Gemini 後點輸入框選「<strong>貼上</strong>」即可送出。
+        </p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>TrueFind — 雙平台商店合規事實查核快捷工具</span>
+      <span>專案位址：<a href="https://github.com/JUSTWT1999/TrueFind">github.com/JUSTWT1999/TrueFind</a></span>
+    </footer>
+  </main>
+</body>
+</html>
