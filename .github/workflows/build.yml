@@ -70,5 +70,29 @@ jobs:
             -configuration Release \
             -sdk iphonesimulator \
             -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath build/sim \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      - name: Build unsigned iOS Device IPA (for Sideloadly / AltStore / re-signing)
+        run: |
+          cd iosApp
+          xcodebuild \
+            -project TrueFind.xcodeproj \
+            -scheme TrueFind \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build/device \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          mkdir -p build/ipa/Payload
+          cp -R build/device/Build/Products/Release-iphoneos/TrueFind.app build/ipa/Payload/
+          cd build/ipa && zip -r ../TrueFind-iOS-unsigned.ipa Payload
+
+      - name: Upload iOS Unsigned IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrueFind-iOS-Unsigned-IPA
+          path: iosApp/build/TrueFind-iOS-unsigned.ipa

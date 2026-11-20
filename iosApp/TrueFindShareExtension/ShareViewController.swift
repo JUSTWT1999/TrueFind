@@ -48,30 +48,55 @@ final class ShareViewController: UIViewController {
         }
         let providers = items.flatMap { $0.attachments ?? [] }
 
-        if let imageProvider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.image.identifier) }) {
-            imageProvider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, _ in
-                let loadedImage: UIImage?
-                if let img = item as? UIImage {
-                    loadedImage = img
-                } else if let url = item as? URL, let data = try? Data(contentsOf: url) {
-                    loadedImage = UIImage(data: data)
-                } else if let data = item as? Data {
-                    loadedImage = UIImage(data: data)
-                } else {
-                    loadedImage = nil
-                }
+        let imageProviders = providers.filter {
+            $0.hasItemConformingToTypeIdentifier(UTType.image.identifier)
+        }
+        if !imageProviders.isEmpty {
+            let limited = Array(imageProviders.prefix(5))
+            let group = DispatchGroup()
+            var orderedImages = [UIImage?](repeating: nil, count: limited.count)
+            let lock = NSLock()
 
-                DispatchQueue.main.async {
-                    guard let loadedImage else {
-                        completion(nil)
-                        return
+            for (idx, provider) in limited.enumerated() {
+                group.enter()
+                provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, _ in
+                    let loadedImage: UIImage?
+                    if let img = item as? UIImage {
+                        loadedImage = img
+                    } else if let url = item as? URL, let data = try? Data(contentsOf: url) {
+                        loadedImage = UIImage(data: data)
+                    } else if let data = item as? Data {
+                        loadedImage = UIImage(data: data)
+                    } else {
+                        loadedImage = nil
                     }
+                    lock.lock()
+                    orderedImages[idx] = loadedImage
+                    lock.unlock()
+                    group.leave()
+                }
+            }
+
+            group.notify(queue: .global(qos: .userInitiated)) {
+                let validImages = orderedImages.compactMap { $0 }
+                guard !validImages.isEmpty else {
+                    DispatchQueue.main.async { completion(nil) }
+                    return
+                }
+                let finalImage = validImages.count > 1
+                    ? IosImageStitcher.stitch(frames: validImages)
+                    : validImages[0]
+                let label = validImages.count > 1
+                    ? "已自動拼接長截圖"
+                    : "已接收分享圖片／截圖"
+                DispatchQueue.main.async {
                     completion(
                         IosCapturePayload(
-                            image: loadedImage,
+                            image: finalImage,
                             imageUrl: nil,
                             text: nil,
-                            sourceLabel: "已接收分享圖片／截圖"
+                            sourceLabel: label,
+                            frameCount: validImages.count
                         )
                     )
                 }

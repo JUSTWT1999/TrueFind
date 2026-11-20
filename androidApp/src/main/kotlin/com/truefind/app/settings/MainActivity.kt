@@ -86,11 +86,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    private val assistantRoleLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            // Status refreshes automatically in ON_RESUME
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -212,9 +207,11 @@ class MainActivity : ComponentActivity() {
 
     private fun isTrueFindDefaultAssistant(): Boolean {
         val rm = getSystemService(RoleManager::class.java)
-        if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_ASSISTANT)) {
-            return rm.isRoleHeld(RoleManager.ROLE_ASSISTANT)
-        }
+        val heldByRole = rm != null &&
+            rm.isRoleAvailable(RoleManager.ROLE_ASSISTANT) &&
+            rm.isRoleHeld(RoleManager.ROLE_ASSISTANT)
+        if (heldByRole) return true
+
         return runCatching {
             val current = Settings.Secure.getString(contentResolver, "assistant").orEmpty()
             current.contains(packageName)
@@ -222,17 +219,18 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openDefaultAssistantSettings() {
-        val rm = getSystemService(RoleManager::class.java)
-        if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_ASSISTANT) && !rm.isRoleHeld(RoleManager.ROLE_ASSISTANT)) {
-            val roleIntent = rm.createRequestRoleIntent(RoleManager.ROLE_ASSISTANT)
-            runCatching {
-                assistantRoleLauncher.launch(roleIntent)
+        // Directly open Android's Digital Assistant settings screen so users can both select
+        // TrueFind and verify "Use screenshot" is enabled (RoleManager's ROLE_ASSISTANT dialog
+        // silently cancels on several OEM ROMs).
+        val candidates = listOf(
+            Intent(Settings.ACTION_VOICE_INPUT_SETTINGS),
+            Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS),
+            Intent(Settings.ACTION_SETTINGS)
+        )
+        for (intent in candidates) {
+            if (runCatching { startActivity(intent); true }.getOrDefault(false)) {
                 return
             }
-        }
-        val intent = Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)
-        runCatching { startActivity(intent) }.onFailure {
-            runCatching { startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)) }
         }
     }
 

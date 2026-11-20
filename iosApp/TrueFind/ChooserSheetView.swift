@@ -18,19 +18,32 @@ struct ActivityShareSheet: UIViewControllerRepresentable {
 }
 
 struct ChooserSheetView: View {
-    let payload: IosCapturePayload
+    let initialPayload: IosCapturePayload
     let onOpenUrl: ((URL) -> Void)?
     let onDismiss: () -> Void
 
+    @State private var currentPayload: IosCapturePayload
     @State private var templates: [PromptTemplate] = []
     @State private var selectedTemplateId: String = ""
     @State private var promptDraft: String = ""
     @State private var promptExpanded: Bool = false
+    @State private var showCropSheet: Bool = false
     @State private var showShareSheet: Bool = false
     @State private var shareItems: [Any] = []
     @State private var toastMessage: String? = nil
 
     private let targets: [AiTargetApp] = KnownAiTargets.shared.ALL
+
+    init(
+        payload: IosCapturePayload,
+        onOpenUrl: ((URL) -> Void)?,
+        onDismiss: @escaping () -> Void
+    ) {
+        self.initialPayload = payload
+        self.onOpenUrl = onOpenUrl
+        self.onDismiss = onDismiss
+        _currentPayload = State(initialValue: payload)
+    }
 
     var body: some View {
         NavigationStack {
@@ -39,7 +52,7 @@ struct ChooserSheetView: View {
                     previewCard
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("選擇查核模板")
+                        Text("1. 查核類型")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -97,27 +110,26 @@ struct ChooserSheetView: View {
                         }
                     }
 
-                    // Primary share button (carries image + prompt to ChatGPT / Gemini via iOS Share Sheet)
-                    Button {
-                        shareItems = IosAiDispatcher.buildShareItems(promptBody: promptDraft, payload: payload)
-                        toastMessage = "查核指令已同步複製到剪貼簿，請在下方點選 ChatGPT 或 Gemini"
-                        showShareSheet = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "square.and.arrow.up")
-                            Text(payload.hasImage ? "帶截圖＋指令送給 ChatGPT / Gemini" : "透過系統分享送給 AI App")
-                                .fontWeight(.semibold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
-                    }
-                    .buttonStyle(.borderedProminent)
-
-                    // Direct quick launch row (opens AI app directly with clipboard safety net)
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(payload.hasImage ? "或先複製指令並直接開啟 AI App（進入後貼上即可）" : "或一鍵帶入文字開啟 AI")
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("2. 點選 AI 立即送出")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+
+                        // Primary share button (carries cropped/stitched image + prompt to ChatGPT / Gemini)
+                        Button {
+                            shareItems = IosAiDispatcher.buildShareItems(promptBody: promptDraft, payload: currentPayload)
+                            toastMessage = "查核指令已同步複製到剪貼簿；若送給 Gemini 未自動帶字，點輸入框貼上即可"
+                            showShareSheet = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "square.and.arrow.up")
+                                Text(currentPayload.hasImage ? "帶截圖＋指令送給 ChatGPT / Gemini" : "透過系統分享送給 AI App")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 13)
+                        }
+                        .buttonStyle(.borderedProminent)
 
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 14) {
@@ -125,18 +137,25 @@ struct ChooserSheetView: View {
                                     Button {
                                         let finalPrompt = IosAiDispatcher.composeAndCopyPrompt(
                                             promptBody: promptDraft,
-                                            payload: payload
+                                            payload: currentPayload
                                         )
-                                        toastMessage = "已複製查核指令，正開啟 \(target.displayName)…"
-                                        if let url = IosAiDispatcher.buildDirectUrl(
-                                            for: target,
-                                            finalPrompt: finalPrompt,
-                                            hasImage: payload.hasImage
-                                        ), let open = onOpenUrl {
+                                        if target.id == "gemini" && currentPayload.hasImage {
+                                            toastMessage = "圖片已送往 Gemini，查核指令已複製 — 點輸入框貼上即可"
+                                            shareItems = IosAiDispatcher.buildShareItems(promptBody: promptDraft, payload: currentPayload)
+                                            showShareSheet = true
+                                        } else if !currentPayload.hasImage,
+                                                  let url = IosAiDispatcher.buildDirectUrl(
+                                                      for: target,
+                                                      finalPrompt: finalPrompt,
+                                                      hasImage: false
+                                                  ),
+                                                  let open = onOpenUrl {
+                                            toastMessage = "已複製查核指令，正開啟 \(target.displayName)…"
                                             open(url)
                                             onDismiss()
                                         } else {
-                                            shareItems = IosAiDispatcher.buildShareItems(promptBody: promptDraft, payload: payload)
+                                            toastMessage = "查核指令已複製，請在下方點選 \(target.displayName)"
+                                            shareItems = IosAiDispatcher.buildShareItems(promptBody: promptDraft, payload: currentPayload)
                                             showShareSheet = true
                                         }
                                     } label: {
@@ -195,13 +214,31 @@ struct ChooserSheetView: View {
                     onDismiss()
                 }
             }
+            .fullScreenCover(isPresented: $showCropSheet) {
+                if let img = currentPayload.resolvedImage() {
+                    IosCropSheetView(
+                        image: img,
+                        onCancel: { showCropSheet = false },
+                        onConfirm: { cropped in
+                            currentPayload = IosCapturePayload(
+                                image: cropped,
+                                imageUrl: nil,
+                                text: currentPayload.text,
+                                sourceLabel: currentPayload.sourceLabel,
+                                frameCount: currentPayload.frameCount
+                            )
+                            showCropSheet = false
+                        }
+                    )
+                }
+            }
         }
     }
 
     @ViewBuilder
     private var previewCard: some View {
         HStack(spacing: 12) {
-            if let img = payload.image ?? payload.imageUrl.flatMap({ UIImage(contentsOfFile: $0.path) }) {
+            if let img = currentPayload.resolvedImage() {
                 Image(uiImage: img)
                     .resizable()
                     .scaledToFill()
@@ -209,20 +246,38 @@ struct ChooserSheetView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text(payload.sourceLabel)
-                    .font(.subheadline.weight(.semibold))
-                if let text = payload.text, !text.isEmpty {
+                HStack(spacing: 6) {
+                    Text(currentPayload.sourceLabel)
+                        .font(.subheadline.weight(.semibold))
+                    if currentPayload.frameCount > 1 {
+                        Text("已拼接 \(currentPayload.frameCount) 頁")
+                            .font(.caption2.weight(.bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.purple.opacity(0.16))
+                            .foregroundStyle(Color.purple)
+                            .clipShape(Capsule())
+                    }
+                }
+                if let text = currentPayload.text, !text.isEmpty {
                     Text(text)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(3)
                 } else {
-                    Text("僅暫存於本機 App Group 私有快取・無網路權限")
+                    Text("可先裁切重點，或直接點下方 AI 送出")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 0)
+            if currentPayload.hasImage {
+                Button("✂ 裁切") {
+                    showCropSheet = true
+                }
+                .font(.caption.weight(.semibold))
+                .buttonStyle(.bordered)
+            }
         }
         .padding(12)
         .background(Color(.secondarySystemBackground))

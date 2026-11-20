@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 import UIKit
 import TrueFindShared
@@ -7,6 +8,8 @@ struct MainSettingsView: View {
 
     @State private var templates: [PromptTemplate] = []
     @State private var installedIds: Set<String> = []
+    @State private var selectedPhotoItems: [PhotosPickerItem] = []
+    @State private var isStitchingPhotos = false
     @State private var showEditor = false
     @State private var editingTemplate: PromptTemplate? = nil
     @State private var draftTitle = ""
@@ -30,11 +33,28 @@ struct MainSettingsView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Label("系統分享延伸功能（Share Extension）", systemImage: "square.and.arrow.up")
                             .font(.subheadline.weight(.semibold))
-                        Text("在 Threads / FB / IG / Safari 看貼文或拍系統截圖（含整頁長截圖）後，直接點「分享 → TrueFind」即可跳出查核面板。")
+                        Text("在 Threads / FB / IG / Safari 貼文或截圖（支援一次選 1～5 張自動拼成長圖）點「分享 → TrueFind」即可跳出查核面板。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
+
+                    PhotosPicker(
+                        selection: $selectedPhotoItems,
+                        maxSelectionCount: 5,
+                        matching: .images
+                    ) {
+                        HStack {
+                            Image(systemName: "photo.stack")
+                            Text(isStitchingPhotos ? "正在拼接長截圖…" : "從相簿挑選 1～5 張截圖拼接查核（免相簿權限）")
+                                .font(.subheadline.weight(.medium))
+                        }
+                    }
+                    .disabled(isStitchingPhotos)
+                    .onChange(of: selectedPhotoItems) { newItems in
+                        guard !newItems.isEmpty else { return }
+                        loadAndStitchPhotos(items: newItems)
+                    }
                 }
 
                 Section("本機已偵測 AI App") {
@@ -174,5 +194,36 @@ struct MainSettingsView: View {
             }
         }
         installedIds = found
+    }
+
+    private func loadAndStitchPhotos(items: [PhotosPickerItem]) {
+        isStitchingPhotos = true
+        Task {
+            var loaded: [UIImage] = []
+            for item in items {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let img = UIImage(data: data) {
+                    loaded.append(img)
+                }
+            }
+            let stitched: UIImage? = await Task.detached(priority: .userInitiated) {
+                guard !loaded.isEmpty else { return nil }
+                return loaded.count > 1 ? IosImageStitcher.stitch(frames: loaded) : loaded[0]
+            }.value
+
+            await MainActor.run {
+                isStitchingPhotos = false
+                selectedPhotoItems = []
+                if let stitched {
+                    activePayload = IosCapturePayload(
+                        image: stitched,
+                        imageUrl: nil,
+                        text: nil,
+                        sourceLabel: loaded.count > 1 ? "已自動拼接長截圖" : "已挑選截圖",
+                        frameCount: loaded.count
+                    )
+                }
+            }
+        }
     }
 }

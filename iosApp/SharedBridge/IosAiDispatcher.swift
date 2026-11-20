@@ -8,8 +8,29 @@ struct IosCapturePayload: Identifiable {
     let imageUrl: URL?
     let text: String?
     let sourceLabel: String
+    let frameCount: Int
+
+    init(
+        image: UIImage?,
+        imageUrl: URL?,
+        text: String?,
+        sourceLabel: String,
+        frameCount: Int = 1
+    ) {
+        self.image = image
+        self.imageUrl = imageUrl
+        self.text = text
+        self.sourceLabel = sourceLabel
+        self.frameCount = frameCount
+    }
 
     var hasImage: Bool { image != nil || imageUrl != nil }
+
+    func resolvedImage() -> UIImage? {
+        if let image { return image }
+        if let url = imageUrl { return UIImage(contentsOfFile: url.path) }
+        return nil
+    }
 }
 
 enum IosAiDispatcher {

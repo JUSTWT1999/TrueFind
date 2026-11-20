@@ -42,6 +42,7 @@ targets:
       - path: TrueFindShareExtension
       - path: SharedBridge
       - path: TrueFind/ChooserSheetView.swift
+      - path: TrueFind/IosCropSheetView.swift
     info:
       path: TrueFindShareExtension/Info.plist
     entitlements:

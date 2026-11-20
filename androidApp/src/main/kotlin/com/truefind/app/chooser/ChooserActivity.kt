@@ -13,11 +13,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.truefind.app.TrueFindApp
+import com.truefind.app.capture.FloatingBubbleService
 import com.truefind.app.model.CapturePayload
 import com.truefind.app.ui.theme.TrueFindTheme
 import java.io.File
 
 class ChooserActivity : ComponentActivity() {
+
+    override fun onStart() {
+        super.onStart()
+        // Hide floating bubble while user reviews/crops/selects AI so it never overlaps the chooser UI
+        FloatingBubbleService.setBubbleVisible(this, visible = false)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Restore floating bubble once user dispatches to an AI app or cancels/leaves chooser
+        FloatingBubbleService.setBubbleVisible(this, visible = true)
+    }
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {

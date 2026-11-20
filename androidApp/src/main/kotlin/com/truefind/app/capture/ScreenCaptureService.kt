@@ -375,7 +375,7 @@ class ScreenCaptureService : Service() {
                 }
             }
 
-            FloatingBubbleService.setBubbleVisible(this@ScreenCaptureService, visible = true)
+            // Keep floating bubble hidden while ChooserActivity is visible; ChooserActivity restores it on exit.
             ChooserActivity.launch(
                 this@ScreenCaptureService,
                 CapturePayload(
