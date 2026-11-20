@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrueFind — iPhone (iOS) 實際運作畫面與背面輕點圖解</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0b0d12;
+        --card: #141821;
+        --border: #262c3a;
+        --foreground: #f1f5f9;
+        --muted-foreground: #94a3b8;
+        --primary: #3b82f6;
+        --primary-foreground: #ffffff;
+      }
+    }
+    .iphone-frame {
+      aspect-ratio: 9 / 19;
+      border-radius: 34px;
+      border: 5px solid #27272a;
+      background: #f2f2f7;
+      color: #18181b;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 14px 30px -8px rgba(0, 0, 0, 0.3);
+    }
+    .iphone-dark {
+      background: #0f1115;
+      color: #f4f4f5;
+    }
+    .ios-status {
+      height: 30px;
+      padding: 4px 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9.5px;
+      font-weight: 700;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .dynamic-island {
+      width: 64px;
+      height: 16px;
+      border-radius: 999px;
+      background: #09090b;
+      position: absolute;
+      left: 50%;
+      top: 7px;
+      transform: translateX(-50%);
+    }
+    .home-indicator {
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .home-bar {
+      width: 78px;
+      height: 4px;
+      border-radius: 999px;
+      background: currentColor;
+      opacity: 0.3;
+    }
+    .tap-ring {
+      box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.25), 0 0 0 13px rgba(59, 130, 246, 0.12);
+    }
+    .panel-card {
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .panel-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 p-0 font-sans">
+  <div class="max-w-6xl mx-auto px-5 py-6 space-y-6">
+
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-[var(--border)]">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-sm">TF</span>
+          <h1 class="text-xl font-bold tracking-tight">TrueFind — iPhone (iOS) 實際運作畫面與「背面輕點」圖解</h1>
+        </div>
+        <p class="text-sm text-[var(--muted-foreground)] mt-1">
+          核心邏輯與 Android 共用 KMP 共享模組，UI 採 iPhone 原生 SwiftUI 設計。點擊任一張卡片可放大檢視。
+        </p>
+      </div>
+
+      <div class="inline-flex rounded-lg border border-[var(--border)] bg-[var(--card)] p-1 self-start gap-1">
+        <button id="btn-all" onclick="setFilter('all')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition bg-[var(--primary)] text-[var(--primary-foreground)]">
+          完整 6 格總覽
+        </button>
+        <button id="btn-backtap" onclick="setFilter('backtap')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          背面輕點流程（4 格）
+        </button>
+      </div>
+    </div>
+
+    <div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <!-- iOS 01 -->
+      <div data-backtap="false" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-600/15 text-blue-500">iOS 01</span>
+          <span class="text-xs text-[var(--muted-foreground)]">iPhone 主設定頁（SwiftUI）</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="iphone-frame">
+            <div class="ios-status text-zinc-900">
+              <span>17:53</span>
+              <div class="dynamic-island"></div>
+              <span>5G 92</span>
+            </div>
+            <div class="px-3.5 pt-2 pb-1 flex items-center justify-between">
+              <span class="text-base font-extrabold tracking-tight">TrueFind</span>
+              <span class="text-blue-600 font-bold text-base">＋</span>
+            </div>
+
+            <div class="px-3 py-1.5 flex-1 space-y-2 overflow-hidden text-[9px]">
+              <div class="text-[8px] font-semibold text-zinc-500 px-1">一鍵截圖查核（iPhone 專用）</div>
+              <div class="rounded-xl bg-white p-2 space-y-1.5 shadow-sm">
+                <div class="font-bold text-zinc-900">👆 背面輕點兩下／動作按鈕</div>
+                <div class="text-[8px] text-zinc-500 leading-snug">捷徑：拍攝截圖 → TrueFind 查核，0 彈窗直達面板</div>
+                <div class="border-t border-zinc-100 pt-1.5 font-bold text-zinc-900">⬆ 系統分享（Share Extension）</div>
+                <div class="text-[8px] text-zinc-500 leading-snug">支援一次選 1～5 張自動拼成長圖</div>
+                <div class="border-t border-zinc-100 pt-1.5 text-blue-600 font-semibold">
+                  🖼 從相簿挑選 1～5 張截圖拼接（免權限）
+                </div>
+              </div>
+
+              <div class="text-[8px] font-semibold text-zinc-500 px-1">本機已偵測 AI App</div>
+              <div class="rounded-xl bg-white p-2 flex flex-wrap gap-1 shadow-sm">
+                <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-[8px] font-semibold">🟢 ChatGPT ✓</span>
+                <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-[8px] font-semibold">🟢 Gemini ✓</span>
+                <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-[8px] text-zinc-400">⚪ Claude</span>
+              </div>
+
+              <div class="text-[8px] font-semibold text-zinc-500 px-1 flex justify-between">
+                <span>事實查核 Prompt 模板</span>
+                <span class="text-blue-600">還原預設</span>
+              </div>
+              <div class="rounded-xl bg-white p-2 space-y-1 shadow-sm">
+                <div class="flex justify-between font-bold"><span>事實查核</span><span class="text-blue-600 font-normal">編輯</span></div>
+                <div class="text-[7.5px] text-zinc-400 truncate">請幫我對以下內容進行事實查核：1) 列出主要宣稱…</div>
+              </div>
+            </div>
+
+            <div class="home-indicator text-zinc-900"><div class="home-bar"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">與 Android 架構一致、iOS 原生視覺</strong>：同樣有 AI App 偵測、4 組繁中模板編輯與零網路隱私聲明，差別只在觸發區改為 iPhone 專用的「背面輕點＋系統分享＋免權限選圖」。
+        </div>
+      </div>
+
+      <!-- iOS 02 -->
+      <div data-backtap="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400">iOS 02</span>
+          <span class="text-xs text-[var(--muted-foreground)]">什麼是「背面輕點兩下」？</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="iphone-frame iphone-dark justify-between p-3.5">
+            <div class="flex justify-between items-start">
+              <div class="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 p-1.5 grid grid-cols-2 gap-1">
+                <div class="rounded-full bg-zinc-950 border-2 border-zinc-600"></div>
+                <div class="rounded-full bg-zinc-950 border-2 border-zinc-600"></div>
+                <div class="rounded-full bg-zinc-950 border-2 border-zinc-600"></div>
+                <div class="w-3 h-3 rounded-full bg-amber-100/80 m-auto"></div>
+              </div>
+              <span class="text-[8.5px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold border border-blue-500/40">
+                iPhone 背面
+              </span>
+            </div>
+
+            <div class="flex flex-col items-center justify-center my-2 space-y-2">
+              <div class="w-16 h-16 rounded-full bg-blue-600/25 border-2 border-blue-400 flex flex-col items-center justify-center tap-ring">
+                <span class="text-xl">👆</span>
+                <span class="text-[8px] font-extrabold text-blue-200">叩・叩 ×2</span>
+              </div>
+              <div class="text-[9.5px] font-bold text-white text-center">食指輕敲手機背面兩下</div>
+              <div class="text-[8px] text-zinc-400 text-center leading-snug">
+                iPhone 內建功能（免越獄）<br/>設定 → 輔助使用 → 觸控 → 背面輕點
+              </div>
+            </div>
+
+            <div class="rounded-xl bg-zinc-900 border border-zinc-700 p-2 space-y-1 text-[8.5px]">
+              <div class="font-bold text-blue-300">綁定「捷徑」只要 2 個動作：</div>
+              <div class="rounded bg-zinc-800 px-2 py-1 text-zinc-200">1. 📷 拍攝截圖</div>
+              <div class="rounded bg-blue-600/30 border border-blue-500/50 px-2 py-1 text-blue-200 font-semibold">2. ✓ TrueFind：事實查核截圖</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">iPhone 最接近「懸浮球」的一鍵手感</strong>：看貼文時手指敲兩下手機背面（或按 iPhone 15 Pro+ 側邊動作按鈕），系統自動靜默截圖直接喚起 TrueFind！
+        </div>
+      </div>
+
+      <!-- iOS 03 -->
+      <div data-backtap="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-600/15 text-blue-500">iOS 03</span>
+          <span class="text-xs text-[var(--muted-foreground)]">零彈窗瞬間彈出查核面板</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="iphone-frame bg-white">
+            <div class="ios-status bg-zinc-900/40 text-white">
+              <span>17:53</span>
+              <div class="dynamic-island"></div>
+              <span>92</span>
+            </div>
+            <div class="flex-1 bg-zinc-900/40 flex flex-col justify-end">
+              <div class="bg-white rounded-t-3xl p-3 space-y-2 text-zinc-900 shadow-2xl">
+                <div class="flex items-center justify-between">
+                  <span class="text-[9px] text-blue-600">關閉</span>
+                  <span class="text-[10.5px] font-bold">TrueFind 事實查核</span>
+                  <span class="text-[9px] opacity-0">關閉</span>
+                </div>
+
+                <div class="rounded-xl bg-zinc-100 p-2 flex items-center gap-2">
+                  <div class="w-9 h-12 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center text-[7px] font-bold text-amber-900 shrink-0 text-center">
+                    Threads<br/>貼文
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-[9px] font-bold">已透過捷徑擷取畫面</div>
+                    <div class="text-[7.5px] text-zinc-500">可先裁切，或直接送出</div>
+                  </div>
+                  <span class="px-2 py-1 rounded-lg bg-white border border-zinc-200 text-blue-600 text-[8.5px] font-bold shrink-0">✂ 裁切</span>
+                </div>
+
+                <div>
+                  <div class="text-[8px] text-zinc-500 mb-1">1. 查核類型</div>
+                  <div class="flex flex-wrap gap-1">
+                    <span class="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[8.5px] font-bold">事實查核</span>
+                    <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 text-[8.5px]">找原始出處</span>
+                    <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 text-[8.5px]">查邏輯偏誤</span>
+                  </div>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="text-[8px] text-zinc-500">2. 點選 AI 立即送出</div>
+                  <div class="rounded-xl bg-blue-600 text-white py-2 text-center text-[9px] font-bold">
+                    ⬆ 帶截圖＋指令送給 ChatGPT / Gemini
+                  </div>
+                  <div class="grid grid-cols-4 gap-1 text-center pt-0.5">
+                    <div class="flex flex-col items-center">
+                      <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white text-[9px] font-black flex items-center justify-center">GPT</div>
+                      <span class="text-[7.5px] mt-0.5">ChatGPT</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-white text-[10px] font-black flex items-center justify-center">✦</div>
+                      <span class="text-[7.5px] mt-0.5">Gemini</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <div class="w-8 h-8 rounded-xl bg-teal-700 text-white text-[9px] font-bold flex items-center justify-center">P</div>
+                      <span class="text-[7.5px] mt-0.5">Perplexity</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <div class="w-8 h-8 rounded-xl bg-orange-600 text-white text-[9px] font-bold flex items-center justify-center">C</div>
+                      <span class="text-[7.5px] mt-0.5">Claude</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="home-indicator bg-white text-zinc-900"><div class="home-bar"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">跟 Android 完全同款兩步驟面板</strong>：選「1. 查核類型」、可選點「✂ 裁切」，按下方「2. 點選 AI」立即送出！
+        </div>
+      </div>
+
+      <!-- iOS 04 -->
+      <div data-backtap="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-500/15 text-[var(--muted-foreground)]">iOS 04（選用）</span>
+          <span class="text-xs text-[var(--muted-foreground)]">四邊藍點互動裁切</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="iphone-frame iphone-dark">
+            <div class="ios-status text-white">
+              <span>17:53</span>
+              <div class="dynamic-island"></div>
+              <span>92</span>
+            </div>
+            <div class="px-3 py-1.5 flex items-center justify-between text-[9.5px] border-b border-zinc-800">
+              <span class="text-zinc-400">取消</span>
+              <span class="font-bold">拖曳藍點裁切重點</span>
+              <span class="text-blue-400 font-bold">完成</span>
+            </div>
+            <div class="flex-1 p-3 flex flex-col justify-center bg-black relative">
+              <div class="text-[8px] text-zinc-500 mb-1.5 px-1">（上方頭像與狀態列已遮暗排除）</div>
+              <div class="rounded-lg bg-white text-zinc-900 p-2.5 border-2 border-blue-500 relative">
+                <div class="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-white absolute -top-2 left-1/2 -translate-x-1/2"></div>
+                <div class="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-white absolute -bottom-2 left-1/2 -translate-x-1/2"></div>
+                <div class="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-white absolute -left-2 top-1/2 -translate-y-1/2"></div>
+                <div class="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-white absolute -right-2 top-1/2 -translate-y-1/2"></div>
+                <p class="text-[9px] leading-snug">
+                  🚨 <b>內部消息</b>：下週一起央行將全面調降房貸成數至五成，未簽約者全數溯及既往！
+                </p>
+              </div>
+              <div class="text-[8px] text-zinc-500 mt-1.5 px-1">（下方留言區已遮暗排除）</div>
+            </div>
+            <div class="home-indicator text-white"><div class="home-bar"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">與 Android 相同裁切體驗</strong>：在主 App 與 Share Extension 裡都能拖曳四邊藍點裁掉聊天人名或無關畫面。
+        </div>
+      </div>
+
+      <!-- iOS 05 -->
+      <div data-backtap="true" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-600/15 text-emerald-500">iOS 05</span>
+          <span class="text-xs text-[var(--muted-foreground)]">送進 ChatGPT / Gemini</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="iphone-frame iphone-dark">
+            <div class="ios-status text-white">
+              <span>17:53</span>
+              <div class="dynamic-island"></div>
+              <span>92</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-end bg-zinc-900/70">
+              <div class="bg-zinc-900 rounded-t-3xl border-t border-zinc-700 p-3 space-y-2.5 text-white">
+                <div class="flex items-center gap-2 pb-2 border-b border-zinc-800">
+                  <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-950 font-bold text-[8px] flex items-center justify-center shrink-0">裁切圖</div>
+                  <div class="min-w-0">
+                    <div class="text-[9.5px] font-bold truncate">圖片 ＋ 事實查核指令</div>
+                    <div class="text-[8px] text-emerald-400">📋 查核指令已同步寫入剪貼簿</div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 text-center">
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 font-black text-[10px] flex items-center justify-center ring-2 ring-emerald-300">GPT</div>
+                    <span class="text-[8px] mt-1 font-bold">ChatGPT</span>
+                  </div>
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 font-black text-[11px] flex items-center justify-center">✦</div>
+                    <span class="text-[8px] mt-1">Gemini</span>
+                  </div>
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-xl bg-teal-700 font-bold text-[10px] flex items-center justify-center">P</div>
+                    <span class="text-[8px] mt-1">Perplexity</span>
+                  </div>
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-xl bg-orange-600 font-bold text-[10px] flex items-center justify-center">C</div>
+                    <span class="text-[8px] mt-1">Claude</span>
+                  </div>
+                </div>
+
+                <div class="rounded-xl bg-zinc-800 p-2 text-[8px] text-zinc-300 leading-snug">
+                  💡 <b>iOS 系統差異</b>：帶圖片傳給 AI App 時透過 iOS 原生分享面板點一下 ChatGPT / Gemini；純文字則支援一鍵直接開啟對應 App！
+                </div>
+              </div>
+            </div>
+            <div class="home-indicator bg-zinc-900 text-white"><div class="home-bar"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">剪貼簿雙保險同步內建</strong>：點下後自動把查核 Prompt 寫入 iPhone 剪貼簿；若送進 Gemini 只帶入圖片，點輸入框「貼上」就完成！
+        </div>
+      </div>
+
+      <!-- iOS 06 -->
+      <div data-backtap="false" onclick="openZoom(this)" class="panel-card cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-600/15 text-purple-400">iOS 06</span>
+          <span class="text-xs text-[var(--muted-foreground)]">多張截圖自動拼長圖</span>
+        </div>
+
+        <div class="w-56 mx-auto">
+          <div class="iphone-frame bg-white">
+            <div class="ios-status text-zinc-900">
+              <span>17:54</span>
+              <div class="dynamic-island"></div>
+              <span>92</span>
+            </div>
+            <div class="px-3 py-1.5 border-b border-zinc-200 flex items-center justify-between text-[9.5px] font-bold">
+              <span>相簿 / 系統分享</span>
+              <span class="text-purple-600">已選 3 張截圖</span>
+            </div>
+            <div class="p-3 flex-1 space-y-2.5">
+              <div class="grid grid-cols-3 gap-1.5">
+                <div class="h-14 rounded-lg bg-purple-50 border-2 border-purple-500 flex flex-col items-center justify-center text-[8px] font-bold text-purple-800">
+                  第 1 頁<span class="text-[7px] text-purple-500">✓</span>
+                </div>
+                <div class="h-14 rounded-lg bg-purple-50 border-2 border-purple-500 flex flex-col items-center justify-center text-[8px] font-bold text-purple-800">
+                  第 2 頁<span class="text-[7px] text-purple-500">✓</span>
+                </div>
+                <div class="h-14 rounded-lg bg-purple-50 border-2 border-purple-500 flex flex-col items-center justify-center text-[8px] font-bold text-purple-800">
+                  第 3 頁<span class="text-[7px] text-purple-500">✓</span>
+                </div>
+              </div>
+
+              <div class="text-center text-[10px] font-bold text-purple-600">↓ 分享給「TrueFind 查核」↓</div>
+
+              <div class="rounded-xl bg-purple-50 border border-purple-200 p-2 flex items-center gap-2">
+                <div class="w-8 h-14 rounded bg-white border border-purple-300 flex flex-col justify-between p-1 shrink-0">
+                  <div class="h-1.5 bg-zinc-300 rounded"></div>
+                  <div class="h-1.5 bg-purple-300 rounded"></div>
+                  <div class="h-1.5 bg-zinc-300 rounded"></div>
+                  <div class="h-1.5 bg-purple-300 rounded"></div>
+                </div>
+                <div class="text-[8.5px] leading-snug">
+                  <div class="font-bold text-purple-900">KMP 自動去重疊拼接</div>
+                  <div class="text-purple-700 mt-0.5">與 Android 共用同一套 OverlapFinder 演算法，拼成 1 張長圖！</div>
+                </div>
+              </div>
+
+              <div class="rounded-lg bg-zinc-100 p-2 text-[8px] text-zinc-600">
+                ⚡ Safari 網頁更可直接用 iPhone 內建「整頁截圖」→ 分享給 TrueFind！
+              </div>
+            </div>
+            <div class="home-indicator text-zinc-900"><div class="home-bar"></div></div>
+          </div>
+        </div>
+
+        <div class="text-xs leading-relaxed text-[var(--muted-foreground)]">
+          <strong class="text-[var(--foreground)]">長文貼文也有解</strong>：在 iPhone 相簿或 Share Extension 一次勾選 2～5 張截圖分享給 TrueFind（或在 TrueFind 主頁免權限選圖），自動拼成一張清晰長圖送 AI！
+        </div>
+      </div>
+
+    </div>
+
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 overflow-x-auto">
+      <div class="text-xs font-bold mb-2.5">Android 版 vs iPhone (iOS) 版差異一目瞭然</div>
+      <table class="w-full text-xs text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)]">
+            <th class="py-1.5 pr-3">項目</th>
+            <th class="py-1.5 pr-3">Android 版</th>
+            <th class="py-1.5">iPhone (iOS) 版</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--border)] text-[var(--muted-foreground)]">
+          <tr>
+            <td class="py-2 pr-3 font-semibold text-[var(--foreground)]">一鍵快速觸發</td>
+            <td class="py-2 pr-3">數位助理長按（0 彈窗）＋ 懸浮球（純圖示雙圓圈）＋ 狀態列磁貼</td>
+            <td class="py-2">「背面輕點兩下／動作按鈕」捷徑（0 彈窗）＋ 系統分享延伸功能</td>
+          </tr>
+          <tr>
+            <td class="py-2 pr-3 font-semibold text-[var(--foreground)]">捲動長截圖</td>
+            <td class="py-2 pr-3">按壓懸浮球選捲動圖示，同一次授權連拍 2～5 頁拼接</td>
+            <td class="py-2">一次選 2～5 張截圖由 KMP 自動拼長圖 ＋ 支援 Safari 整頁截圖分享</td>
+          </tr>
+          <tr>
+            <td class="py-2 pr-3 font-semibold text-[var(--foreground)]">面板／裁切／模板</td>
+            <td class="py-2 pr-3" colspan="2">完全一致（共用同一套 KMP 4 組繁中模板、自訂 CRUD、互動裁切與剪貼簿防呆）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="zoom-modal" onclick="closeZoom(event)" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl max-w-md w-full p-5 space-y-4 relative shadow-2xl" onclick="event.stopPropagation()">
+      <button onclick="hideModal()" class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-xs font-bold flex items-center justify-center hover:opacity-80">✕</button>
+      <div id="zoom-content" class="flex flex-col gap-3"></div>
+    </div>
+  </div>
+
+  <script>
+    function setFilter(mode) {
+      const cards = document.querySelectorAll('#grid .panel-card');
+      const grid = document.getElementById('grid');
+      const btnAll = document.getElementById('btn-all');
+      const btnBt = document.getElementById('btn-backtap');
+
+      if (mode === 'backtap') {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5';
+        cards.forEach(c => c.style.display = c.dataset.backtap === 'true' ? 'flex' : 'none');
+        btnBt.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition bg-[var(--primary)] text-[var(--primary-foreground)]';
+        btnAll.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]';
+      } else {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5';
+        cards.forEach(c => c.style.display = 'flex');
+        btnAll.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition bg-[var(--primary)] text-[var(--primary-foreground)]';
+        btnBt.className = 'px-3 py-1.5 text-xs font-semibold rounded-md transition text-[var(--muted-foreground)] hover:text-[var(--foreground)]';
+      }
+    }
+
+    function openZoom(cardEl) {
+      const modal = document.getElementById('zoom-modal');
+      const target = document.getElementById('zoom-content');
+      target.innerHTML = cardEl.innerHTML;
+      const wrap = target.querySelector('.w-56');
+      if (wrap) {
+        wrap.classList.remove('w-56');
+        wrap.classList.add('w-64');
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function hideModal() {
+      document.getElementById('zoom-modal').classList.add('hidden');
+    }
+
+    function closeZoom(e) {
+      if (e.target.id === 'zoom-modal') hideModal();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hideModal();
+    });
+  </script>
+</body>
+</html>
